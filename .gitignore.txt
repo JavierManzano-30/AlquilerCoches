@@ -1,0 +1,36 @@
+# Compiled class file
+*.class
+
+# Log file
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+
+# virtual machine crash logs
+hs_err_pid*
+
+# Eclipse files
+.project
+.classpath
+.settings/
+bin/
+target/
+
+# Maven / Gradle (si llegás a usar)
+*.iml
+.gradle/
+build/
+out/
+
+# Windows/Mac/Linux trash
+.DS_Store
+Thumbs.db
