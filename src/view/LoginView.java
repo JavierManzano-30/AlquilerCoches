@@ -9,6 +9,8 @@ import javax.swing.JToolBar;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JPasswordField;
+import javax.swing.JButton;
+import java.awt.Color;
 
 public class LoginView extends JFrame {
 
@@ -16,6 +18,7 @@ public class LoginView extends JFrame {
 	private JPanel contentPane;
 	private JTextField txtEmail;
 	private JPasswordField txtPassword;
+	private JLabel lblError;
 
 	/**
 	 * Launch the application.
@@ -55,11 +58,21 @@ public class LoginView extends JFrame {
 		txtEmail.setColumns(10);
 		
 		JLabel lblNewLabel_1 = new JLabel("Contraseña");
-		lblNewLabel_1.setBounds(54, 115, 45, 13);
+		lblNewLabel_1.setBounds(41, 118, 87, 13);
 		contentPane.add(lblNewLabel_1);
 		
 		txtPassword = new JPasswordField();
-		txtPassword.setBounds(154, 115, 7, 19);
+		txtPassword.setBounds(154, 115, 96, 19);
 		contentPane.add(txtPassword);
+		
+		JButton btnLogin = new JButton("New button");
+		btnLogin.setBounds(154, 166, 96, 21);
+		contentPane.add(btnLogin);
+		
+		JLabel lblError = new JLabel("");
+		lblError.setForeground(new Color(255, 0, 0));
+		lblError.setBounds(154, 197, 96, 19);
+		lblError.setVisible(false);
+		contentPane.add(lblError);
 	}
 }
