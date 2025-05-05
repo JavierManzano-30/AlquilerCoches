@@ -57,9 +57,9 @@ public class PrincipalView extends JFrame {
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
 
-		contentPane.add(crearBotonRedondeado("Ver Coches", 297, 81, 114, 33));
-		contentPane.add(crearBotonRedondeado("Mis Alquileres", 297, 124, 114, 34));
-		contentPane.add(crearBotonRedondeado("Cerrar Sesión", 297, 168, 114, 33));
+		contentPane.add(crearBotonRedondeado("Ver Coches", 297, 61, 114, 33));
+		contentPane.add(crearBotonRedondeado("Mis Alquileres", 297, 104, 114, 34));
+		contentPane.add(crearBotonRedondeado("Cerrar Sesión", 297, 148, 114, 33));
 
 		JPanel panel = new JPanel();
 		panel.setOpaque(false); // Para que se vea el fondo

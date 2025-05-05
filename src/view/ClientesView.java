@@ -1,6 +1,6 @@
 package view;
 
-import java.awt.EventQueue;
+import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
@@ -27,17 +27,31 @@ public class ClientesView extends JFrame {
     public ClientesView() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(100, 100, 400, 300);
-        contentPane = new JPanel();
+
+        // Panel con fondo personalizado
+        contentPane = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                ImageIcon fondo = new ImageIcon("src/utils/ClientesImage.jpg");
+                Image img = fondo.getImage();
+                g.drawImage(img, 0, 0, getWidth(), getHeight(), this);
+            }
+        };
+
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        setContentPane(contentPane);
         contentPane.setLayout(null);
+        setContentPane(contentPane);
 
         JLabel lblTitulo = new JLabel("Mi Perfil");
         lblTitulo.setBounds(160, 10, 100, 25);
+        lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setFont(new Font("Tahoma", Font.BOLD, 16));
         contentPane.add(lblTitulo);
 
         JLabel lblNombre = new JLabel("Nombre:");
         lblNombre.setBounds(50, 50, 80, 20);
+        lblNombre.setForeground(Color.WHITE);
         contentPane.add(lblNombre);
 
         txtNombre = new JTextField();
@@ -46,6 +60,7 @@ public class ClientesView extends JFrame {
 
         JLabel lblApellido = new JLabel("Apellido:");
         lblApellido.setBounds(50, 80, 80, 20);
+        lblApellido.setForeground(Color.WHITE);
         contentPane.add(lblApellido);
 
         txtApellido = new JTextField();
@@ -54,6 +69,7 @@ public class ClientesView extends JFrame {
 
         JLabel lblEmail = new JLabel("Email:");
         lblEmail.setBounds(50, 110, 80, 20);
+        lblEmail.setForeground(Color.WHITE);
         contentPane.add(lblEmail);
 
         txtEmail = new JTextField();
@@ -62,6 +78,7 @@ public class ClientesView extends JFrame {
 
         JLabel lblTelefono = new JLabel("Teléfono:");
         lblTelefono.setBounds(50, 140, 80, 20);
+        lblTelefono.setForeground(Color.WHITE);
         contentPane.add(lblTelefono);
 
         txtTelefono = new JTextField();
@@ -70,6 +87,10 @@ public class ClientesView extends JFrame {
 
         JButton btnActualizar = new JButton("Actualizar datos");
         btnActualizar.setBounds(125, 190, 150, 25);
+        btnActualizar.setBackground(new Color(30, 30, 30));
+        btnActualizar.setForeground(Color.WHITE);
+        btnActualizar.setFocusPainted(false);
+        btnActualizar.setFont(new Font("Tahoma", Font.BOLD, 12));
         contentPane.add(btnActualizar);
     }
 }
