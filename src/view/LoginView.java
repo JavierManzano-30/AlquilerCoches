@@ -1,6 +1,5 @@
 package view;
 
-import java.awt.EventQueue;
 import javax.swing.*;
 import java.awt.*;
 
@@ -12,7 +11,6 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.JPasswordField;
 import javax.swing.JButton;
-import java.awt.Color;
 import javax.swing.ImageIcon;
 
 public class LoginView extends JFrame {
@@ -22,6 +20,8 @@ public class LoginView extends JFrame {
 	private JTextField txtEmail;
 	private JPasswordField txtPassword;
 	private JLabel lblError;
+    private final ImageIcon Fondo = new ImageIcon(getClass().getResource("/utils/PrincipalImage.jpg"));
+
 
 	/**
 	 * Launch the application.
@@ -46,17 +46,24 @@ public class LoginView extends JFrame {
 	    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	    setBounds(100, 100, 450, 300);
 	    contentPane = new JPanel() {
-	        @Override
-	        protected void paintComponent(Graphics g) {
-	            super.paintComponent(g);
-	            ImageIcon imagen = new ImageIcon("C:\\Users\\javie\\Documents\\GitHub\\AlquilerCoches\\src\\utils\\LoginImage.jpg");
-	            g.drawImage(imagen.getImage(), 0, 0, getWidth(), getHeight(), this);
-	        }
-	    };
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.drawImage(Fondo.getImage(), 0, 0, getWidth(), getHeight(), this);
+            }
+        };
 	    contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 	    setContentPane(contentPane);
 	    contentPane.setLayout(null);
 
+	    JPanel panel = new JPanel();
+	    JLabel label = new JLabel("Correo");
+	    JTextField text = new JTextField(20);
+	    
+	    panel.add(label);
+	    panel.add(text);
+	    contentPane.add(panel);
+	    		
 	    // COMPONENTES DE LOGIN
 	    JLabel lblNewLabel = new JLabel("Correo Electrónico");
 	    lblNewLabel.setBounds(10, 22, 125, 13);

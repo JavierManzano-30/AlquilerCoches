@@ -2,81 +2,33 @@ package model;
 
 public class Coche {
     private int id;
-    private int idModelo;
+    private String marca;
+    private String modelo;
     private int año;
+    private double precio;
+    private boolean disponible;
     private int caballos;
     private int cilindrada;
-    private double precioDia;
-    private boolean disponible;
 
-    // Constructor vacío
-    public Coche() {}
-
-    // Constructor completo
-    public Coche(int id, int idModelo, int año, int caballos, int cilindrada, double precioDia, boolean disponible) {
+    // Constructor
+    public Coche(int id, String marca, String modelo, int año, double precio, boolean disponible, int caballos, int cilindrada) {
         this.id = id;
-        this.idModelo = idModelo;
+        this.marca = marca;
+        this.modelo = modelo;
         this.año = año;
+        this.precio = precio;
+        this.disponible = disponible;
         this.caballos = caballos;
         this.cilindrada = cilindrada;
-        this.precioDia = precioDia;
-        this.disponible = disponible;
     }
 
-    // Getters y setters
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public int getIdModelo() {
-        return idModelo;
-    }
-
-    public void setIdModelo(int idModelo) {
-        this.idModelo = idModelo;
-    }
-
-    public int getAño() {
-        return año;
-    }
-
-    public void setAño(int año) {
-        this.año = año;
-    }
-
-    public int getCaballos() {
-        return caballos;
-    }
-
-    public void setCaballos(int caballos) {
-        this.caballos = caballos;
-    }
-
-    public int getCilindrada() {
-        return cilindrada;
-    }
-
-    public void setCilindrada(int cilindrada) {
-        this.cilindrada = cilindrada;
-    }
-
-    public double getPrecioDia() {
-        return precioDia;
-    }
-
-    public void setPrecioDia(double precioDia) {
-        this.precioDia = precioDia;
-    }
-
-    public boolean isDisponible() {
-        return disponible;
-    }
-
-    public void setDisponible(boolean disponible) {
-        this.disponible = disponible;
-    }
+    // Getters
+    public int getId() { return id; }
+    public String getMarca() { return marca; }
+    public String getModelo() { return modelo; }
+    public int getAño() { return año; }
+    public double getPrecio() { return precio; }
+    public boolean isDisponible() { return disponible; }
+    public int getCaballos() { return caballos; }
+    public int getCilindrada() { return cilindrada; }
 }
