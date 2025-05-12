@@ -36,7 +36,7 @@ public class AlquileresView extends JFrame {
 			@Override
 			protected void paintComponent(Graphics g) {
 				super.paintComponent(g);
-				ImageIcon fondo = new ImageIcon("src/utils/AlquileresImage.jpg");
+				ImageIcon fondo = new ImageIcon("src/utils/image/AlquileresImage.jpg");
 				Image img = fondo.getImage();
 				g.drawImage(img, 0, 0, getWidth(), getHeight(), this);
 			}

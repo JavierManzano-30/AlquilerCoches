@@ -20,7 +20,7 @@ public class LoginView extends JFrame {
 	private JTextField txtEmail;
 	private JPasswordField txtPassword;
 	private JLabel lblError;
-    private final ImageIcon Fondo = new ImageIcon(getClass().getResource("/utils/PrincipalImage.jpg"));
+    private final ImageIcon Fondo = new ImageIcon(getClass().getResource("src/utils/image/PrincipalImage.jpg"));
 
 
 	/**

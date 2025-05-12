@@ -11,8 +11,8 @@ public class PrincipalView extends JFrame {
     private JPanel contentPane;
     private final Color COLOR_BASE = new Color(137, 161, 251);
     private final Color COLOR_HOVER = new Color(107, 131, 221);
-    private final ImageIcon iconoFondo = new ImageIcon(getClass().getResource("/utils/LoginImage.jpg"));  //CAMBIAR
-    private final ImageIcon Fondo = new ImageIcon(getClass().getResource("/utils/PrincipalImage.jpg"));
+    private final ImageIcon iconoFondo = new ImageIcon(getClass().getResource("src/utils/image/LoginImage.jpg"));  //CAMBIAR
+    private final ImageIcon Fondo = new ImageIcon(getClass().getResource("src/utils/image/PrincipalImage.jpg"));
 
     public static void main(String[] args) {
         EventQueue.invokeLater(() -> {

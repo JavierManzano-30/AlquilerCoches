@@ -33,7 +33,7 @@ public class ClientesView extends JFrame {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon fondo = new ImageIcon("src/utils/ClientesImage.jpg");
+                ImageIcon fondo = new ImageIcon("src/utils/image/ClientesImage.jpg");
                 Image img = fondo.getImage();
                 g.drawImage(img, 0, 0, getWidth(), getHeight(), this);
             }

@@ -50,7 +50,7 @@ public class CochesView extends JFrame {
 			@Override
 			protected void paintComponent(Graphics g) {
 				super.paintComponent(g);
-				ImageIcon fondo = new ImageIcon("C:\\Users\\javie\\Documents\\GitHub\\AlquilerCoches\\src\\utils\\CochesImage.jpg");
+				ImageIcon fondo = new ImageIcon("src/utils/image/CochesImage.jpg");
 				Image img = fondo.getImage();
 				g.drawImage(img, 0, 0, getWidth(), getHeight(), this);
 			}
