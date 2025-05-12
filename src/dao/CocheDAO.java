@@ -1,93 +1,90 @@
 package dao;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
 import model.Coche;
-import utils.Conexion;
 
 public class CocheDAO {
+    
+    private Connection conexion;
 
-    private Connection conn;
-
-    public CocheDAO() {
-        conn = Conexion.getConexion(); // Usa tu clase de conexión aquí
+    public CocheDAO(Connection conexion) {
+        this.conexion = conexion;
     }
 
-    // Crear nuevo coche
-    public boolean insertarCoche(Coche coche) {
-        String sql = "INSERT INTO coches (id_modelo, año, caballos, cilindrada, precio_dia, disponible) VALUES (?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, coche.getIdModelo());
-            stmt.setInt(2, coche.getAño());
-            stmt.setInt(3, coche.getCaballos());
-            stmt.setInt(4, coche.getCilindrada());
-            stmt.setDouble(5, coche.getPrecioDia());
-            stmt.setBoolean(6, coche.isDisponible());
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
+    public List<Coche> obtenerTodosLosCoches() throws SQLException {
+        List<Coche> coches = new ArrayList<>();
+        String sql = "SELECT c.id AS coche_id, m.nombre AS marca, mo.nombre AS modelo, c.año, c.precio_dia, c.disponible, c.caballos, c.cilindrada "
+                   + "FROM coches c "
+                   + "JOIN modelo mo ON c.id_modelo = mo.id "
+                   + "JOIN marca m ON mo.id_marca = m.id";
 
-    // Leer todos los coches
-    public List<Coche> obtenerTodosLosCoches() {
-        List<Coche> lista = new ArrayList<>();
-        String sql = "SELECT * FROM coches";
-        try (Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
-
+        try (Statement stmt = conexion.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                Coche c = new Coche();
-                c.setId(rs.getInt("id"));
-                c.setIdModelo(rs.getInt("id_modelo"));
-                c.setAño(rs.getInt("año"));
-                c.setCaballos(rs.getInt("caballos"));
-                c.setCilindrada(rs.getInt("cilindrada"));
-                c.setPrecioDia(rs.getDouble("precio_dia"));
-                c.setDisponible(rs.getBoolean("disponible"));
-                lista.add(c);
+                Coche coche = new Coche(
+                    rs.getInt("coche_id"),
+                    rs.getString("marca"),
+                    rs.getString("modelo"),
+                    rs.getInt("año"),
+                    rs.getDouble("precio_dia"),
+                    rs.getBoolean("disponible"),
+                    rs.getInt("caballos"),
+                    rs.getInt("cilindrada")
+                );
+                coches.add(coche);
             }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
-        return lista;
+        return coches;
     }
 
-    // Actualizar un coche
-    public boolean actualizarCoche(Coche coche) {
-        String sql = "UPDATE coches SET id_modelo = ?, año = ?, caballos = ?, cilindrada = ?, precio_dia = ?, disponible = ? WHERE id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setInt(1, coche.getIdModelo());
-            stmt.setInt(2, coche.getAño());
-            stmt.setInt(3, coche.getCaballos());
-            stmt.setInt(4, coche.getCilindrada());
-            stmt.setDouble(5, coche.getPrecioDia());
-            stmt.setBoolean(6, coche.isDisponible());
-            stmt.setInt(7, coche.getId());
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
-    // Eliminar coche
-    public boolean eliminarCoche(int id) {
-        String sql = "DELETE FROM coches WHERE id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+    public Coche obtenerCochePorId(int id) throws SQLException {
+        String sql = "SELECT * FROM coches WHERE id = ?";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setInt(1, id);
-            return stmt.executeUpdate() > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    return new Coche(
+                        rs.getInt("id"),
+                        rs.getString("marca"),
+                        rs.getString("modelo"),
+                        rs.getInt("anio"),
+                        rs.getDouble("precio")
+                    );
+                }
+            }
+        }
+        return null;
+    }
+
+    public void insertarCoche(Coche coche) throws SQLException {
+        String sql = "INSERT INTO coches (marca, modelo, anio, precio) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setString(1, coche.getMarca());
+            stmt.setString(2, coche.getModelo());
+            stmt.setInt(3, coche.getAnio());
+            stmt.setDouble(4, coche.getPrecio());
+            stmt.executeUpdate();
+        }
+    }
+
+    public void actualizarCoche(Coche coche) throws SQLException {
+        String sql = "UPDATE coches SET marca = ?, modelo = ?, anio = ?, precio = ? WHERE id = ?";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setString(1, coche.getMarca());
+            stmt.setString(2, coche.getModelo());
+            stmt.setInt(3, coche.getAnio());
+            stmt.setDouble(4, coche.getPrecio());
+            stmt.setInt(5, coche.getId());
+            stmt.executeUpdate();
+        }
+    }
+
+    public void eliminarCoche(int id) throws SQLException {
+        String sql = "DELETE FROM coches WHERE id = ?";
+        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
         }
     }
 }

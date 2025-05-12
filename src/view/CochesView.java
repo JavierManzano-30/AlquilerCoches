@@ -1,6 +1,7 @@
 package view;
 
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.Color;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -11,12 +12,15 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JScrollPane;
-import javax.swing.JButton;
 import javax.swing.ImageIcon;
 import java.awt.Image;
-import java.awt.Graphics;
-import java.awt.Color;
-import javax.swing.table.JTableHeader;
+import model.Coche;
+import dao.CocheDAO;
+import controller.ConexionBD;
+import java.sql.Connection;
+import java.util.List;
+import java.sql.SQLException;
+
 
 public class CochesView extends JFrame {
 
@@ -42,67 +46,83 @@ public class CochesView extends JFrame {
 	 * Create the frame.
 	 */
 	public CochesView() {
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+	    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	    setBounds(100, 100, 450, 300);
 
-		// Panel personalizado con fondo
-		contentPane = new JPanel() {
-			@Override
-			protected void paintComponent(Graphics g) {
-				super.paintComponent(g);
-				ImageIcon fondo = new ImageIcon("src/utils/image/CochesImage.jpg");
-				Image img = fondo.getImage();
-				g.drawImage(img, 0, 0, getWidth(), getHeight(), this);
-			}
-		};
+	    contentPane = new JPanel() {
+	        @Override
+	        protected void paintComponent(Graphics g) {
+	            super.paintComponent(g);
+	            ImageIcon fondo = new ImageIcon("src/utils/image/CochesImage.jpg");
+	            Image img = fondo.getImage();
+	            g.drawImage(img, 0, 0, getWidth(), getHeight(), this);
+	        }
+	    };
+	    contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+	    contentPane.setLayout(null);
+	    setContentPane(contentPane);
 
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		contentPane.setLayout(null);
-		setContentPane(contentPane);
+	    JLabel lblTitulo = new JLabel("Coches Disponibles");
+	    lblTitulo.setBounds(150, 10, 200, 30);
+	    contentPane.add(lblTitulo);
+	    lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 20)); // Fuente moderna, tamaño 20, negrita
+	    lblTitulo.setForeground(Color.WHITE); // Letra blanca
 
-		JLabel lblTitulo = new JLabel("Coches Disponibles");
-		lblTitulo.setBounds(150, 10, 163, 30);
-		contentPane.add(lblTitulo);
 
-		JScrollPane scrollPane = new JScrollPane();
-		scrollPane.setBounds(34, 51, 380, 169);
-		contentPane.add(scrollPane);
+	    JScrollPane scrollPane = new JScrollPane();
+	    scrollPane.setBounds(10, 51, 416, 169);
+	    contentPane.add(scrollPane);
 
-		tableCoches = new JTable();
-		scrollPane.setViewportView(tableCoches);
+	    tableCoches = new JTable();
+	    scrollPane.setViewportView(tableCoches);
 
-		// Crear el modelo de tabla con columnas
-		DefaultTableModel model = new DefaultTableModel();
-		model.setColumnIdentifiers(new String[] {
-			"ID", "Marca", "Modelo", "Año", "Precio por día (€)", "Disponible"
-		});
+	    DefaultTableModel model = new DefaultTableModel();
+	    model.setColumnIdentifiers(new String[] {
+	        "Marca", "Modelo", "Año", "Precio por día (€)", "Caballos", "Cilindrada", "Disponible"
+	    });
+	    
+	    tableCoches.setModel(model);
 
-		model.addRow(new Object[] {1, "Nissan", "GT-R", 2020, 150, "Sí"});
-		model.addRow(new Object[] {2, "Toyota", "Supra", 2019, 130, "Sí"});
-		model.addRow(new Object[] {3, "Mazda", "RX-7", 2002, 110, "No"});
-		model.addRow(new Object[] {4, "Honda", "NSX", 2021, 180, "Sí"});
+	    // Cargar los coches desde la base de datos
+	    try {
+	        Connection conexion = ConexionBD.conectar();
+	        CocheDAO dao = new CocheDAO(conexion);
+	        List<Coche> coches = dao.obtenerTodosLosCoches();
 
-		tableCoches.setModel(model);
-		
-		// Hacer scrollPane y su viewport transparentes
-		scrollPane.setOpaque(false);
-		scrollPane.getViewport().setOpaque(false);
-		scrollPane.setBorder(null);
+	        for (Coche coche : coches) {
+	            System.out.println("Coche agregado: " + coche.getMarca() + " " + coche.getModelo()); // Verifica que los datos se agregan
+	            model.addRow(new Object[] {
+	                coche.getMarca(),
+	                coche.getModelo(),
+	                coche.getAnio(),
+	                coche.getPrecio(),
+	                coche.getCaballos(),
+	                coche.getCilindrada(),
+	                coche.isDisponible() ? "Sí" : "No"
+	            });
+	        }
 
-		// Hacer la tabla semitransparente
-		tableCoches.setOpaque(false);
-		tableCoches.setBackground(new Color(255, 255, 255, 150)); // blanco con alpha 150
-		tableCoches.setForeground(Color.BLACK);
-		tableCoches.setShowGrid(false); // opcional: oculta bordes de celdas
+	        conexion.close();
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
 
-		// Ajustar el color del encabezado de columna
-		JTableHeader header = tableCoches.getTableHeader();
-		header.setOpaque(false);
-		header.setBackground(new Color(255, 255, 255, 180));
-		header.setForeground(Color.BLACK);
+	 // Hacer scrollPane y su viewport transparentes
+	    scrollPane.setOpaque(false);
+	    scrollPane.getViewport().setOpaque(false);
+	    scrollPane.setBorder(null);
 
-		JButton btnAlquilar = new JButton("Alquilar Coche");
-		btnAlquilar.setBounds(148, 232, 141, 21);
-		contentPane.add(btnAlquilar);
+	    // Tabla transparente y sin bordes visibles
+	    tableCoches.setOpaque(false);
+	    tableCoches.setBackground(new Color(255, 255, 255, 100)); // Más transparencia
+	    tableCoches.setForeground(Color.BLACK); // Texto claro
+	    tableCoches.setGridColor(new Color(255, 255, 255, 60)); // Líneas muy suaves
+
+	    // Encabezado también semitransparente y estético
+	    JTableHeader header = tableCoches.getTableHeader();
+	    header.setOpaque(false);
+	    header.setBackground(new Color(255, 255, 255, 120));
+	    header.setForeground(Color.BLACK);
+	    header.setFont(new Font("Segoe UI", Font.BOLD, 8));
 	}
 }
