@@ -5,27 +5,19 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.*;
 
+import model.Cliente;
+
 public class PrincipalView extends JFrame {
 
     private static final long serialVersionUID = 1L;
     private JPanel contentPane;
     private final Color COLOR_BASE = new Color(137, 161, 251);
     private final Color COLOR_HOVER = new Color(107, 131, 221);
-    private final ImageIcon iconoFondo = new ImageIcon(getClass().getResource("src/utils/image/LoginImage.jpg"));  //CAMBIAR
-    private final ImageIcon Fondo = new ImageIcon(getClass().getResource("src/utils/image/PrincipalImage.jpg"));
+    private final ImageIcon iconoFondo = new ImageIcon(getClass().getResource("/utils/image/LoginImage.jpg"));
+    private final ImageIcon Fondo = new ImageIcon(getClass().getResource("/utils/image/PrincipalImage.jpg"));
+    private Cliente clienteLogueado;
 
-    public static void main(String[] args) {
-        EventQueue.invokeLater(() -> {
-            try {
-                PrincipalView frame = new PrincipalView();
-                frame.setVisible(true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-    }
-
-    public PrincipalView() {
+    private void initUI() {
         setTitle("Alquiler de Coches");
         setIconImage(iconoFondo.getImage());
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -33,7 +25,6 @@ public class PrincipalView extends JFrame {
         setMinimumSize(new Dimension(400, 300));
         setLocationRelativeTo(null);
 
-        // Fondo redimensionable
         contentPane = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -45,24 +36,25 @@ public class PrincipalView extends JFrame {
         contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
         setContentPane(contentPane);
 
-        // Espaciador superior
         contentPane.add(Box.createVerticalStrut(40));
 
-        // Título centrado
-        JLabel lblBienvenido = new JLabel("Bienvenido");
+        JLabel lblBienvenido = new JLabel("Bienvenido " + clienteLogueado.getNombre());
         lblBienvenido.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblBienvenido.setFont(new Font("SansSerif", Font.BOLD, 22));
         lblBienvenido.setForeground(Color.BLACK);
         contentPane.add(lblBienvenido);
 
         contentPane.add(Box.createVerticalStrut(30));
-
-        // Botones
         contentPane.add(crearBoton("Ver Coches"));
         contentPane.add(Box.createVerticalStrut(10));
         contentPane.add(crearBoton("Mis Alquileres"));
         contentPane.add(Box.createVerticalStrut(10));
         contentPane.add(crearBoton("Cerrar Sesión"));
+    }
+
+    public PrincipalView(Cliente clienteLogueado) {
+        this.clienteLogueado = clienteLogueado;
+        initUI(); // método para construir la interfaz
     }
 
     private JButton crearBoton(String texto) {
@@ -109,8 +101,29 @@ public class PrincipalView extends JFrame {
                         repaint();
                     }
                 });
+
+                // 💡 Acciones para cada botón
+                addActionListener(e -> {
+                    switch (texto) {
+                        case "Ver Coches":
+                            new CochesView(clienteLogueado).setVisible(true);
+                            dispose();
+                            break;
+                        case "Mis Alquileres":
+                            new AlquileresView(clienteLogueado).setVisible(true);
+                            dispose();
+                            break;
+                        case "Cerrar Sesión":
+                            new LoginView().setVisible(true);
+                            dispose();
+                            break;
+                    }
+                });
+
             }
         };
+
         return boton;
     }
+
 }

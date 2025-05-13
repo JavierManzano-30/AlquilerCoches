@@ -13,116 +13,159 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JScrollPane;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
 import java.awt.Image;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.List;
+
+import model.Cliente;
 import model.Coche;
 import dao.CocheDAO;
 import controller.ConexionBD;
-import java.sql.Connection;
-import java.util.List;
-import java.sql.SQLException;
-
 
 public class CochesView extends JFrame {
 
-	private static final long serialVersionUID = 1L;
-	private JPanel contentPane;
-	private JTable tableCoches;
+    private static final long serialVersionUID = 1L;
+    private JPanel contentPane;
+    private JTable tableCoches;
+    private Cliente cliente;
 
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(() -> {
-			try {
-				CochesView frame = new CochesView();
-				frame.setVisible(true);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		});
-	}
+    public CochesView(Cliente cliente) {
+        this.cliente = cliente;
+        initUI();
+    }
 
-	/**
-	 * Create the frame.
-	 */
-	public CochesView() {
-	    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	    setBounds(100, 100, 450, 300);
+    private void initUI() {
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setBounds(100, 100, 500, 400);
+        setLocationRelativeTo(null);
 
-	    contentPane = new JPanel() {
-	        @Override
-	        protected void paintComponent(Graphics g) {
-	            super.paintComponent(g);
-	            ImageIcon fondo = new ImageIcon("src/utils/image/CochesImage.jpg");
-	            Image img = fondo.getImage();
-	            g.drawImage(img, 0, 0, getWidth(), getHeight(), this);
-	        }
-	    };
-	    contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-	    contentPane.setLayout(null);
-	    setContentPane(contentPane);
+        contentPane = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                ImageIcon fondo = new ImageIcon("src/utils/image/CochesImage.jpg");
+                Image img = fondo.getImage();
+                g.drawImage(img, 0, 0, getWidth(), getHeight(), this);
+            }
+        };
+        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+        contentPane.setLayout(null);
+        setContentPane(contentPane);
 
-	    JLabel lblTitulo = new JLabel("Coches Disponibles");
-	    lblTitulo.setBounds(150, 10, 200, 30);
-	    contentPane.add(lblTitulo);
-	    lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 20)); // Fuente moderna, tamaño 20, negrita
-	    lblTitulo.setForeground(Color.WHITE); // Letra blanca
+        JLabel lblTitulo = new JLabel("Coches Disponibles");
+        lblTitulo.setBounds(150, 10, 200, 30);
+        contentPane.add(lblTitulo);
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 20));
+        lblTitulo.setForeground(Color.WHITE);
 
+        JScrollPane scrollPane = new JScrollPane();
+        scrollPane.setBounds(10, 50, 460, 180);
+        contentPane.add(scrollPane);
 
-	    JScrollPane scrollPane = new JScrollPane();
-	    scrollPane.setBounds(10, 51, 416, 169);
-	    contentPane.add(scrollPane);
+        tableCoches = new JTable();
+        scrollPane.setViewportView(tableCoches);
 
-	    tableCoches = new JTable();
-	    scrollPane.setViewportView(tableCoches);
+        DefaultTableModel model = new DefaultTableModel();
+        model.setColumnIdentifiers(new String[] {
+            "ID", "Marca", "Modelo", "Año", "Precio por día (€)", "Caballos", "Cilindrada", "Disponible"
+        });
+        tableCoches.setModel(model);
 
-	    DefaultTableModel model = new DefaultTableModel();
-	    model.setColumnIdentifiers(new String[] {
-	        "Marca", "Modelo", "Año", "Precio por día (€)", "Caballos", "Cilindrada", "Disponible"
-	    });
-	    
-	    tableCoches.setModel(model);
+        try {
+            Connection conexion = ConexionBD.conectar();
+            CocheDAO dao = new CocheDAO(conexion);
+            List<Coche> coches = dao.obtenerTodosLosCoches();
 
-	    // Cargar los coches desde la base de datos
-	    try {
-	        Connection conexion = ConexionBD.conectar();
-	        CocheDAO dao = new CocheDAO(conexion);
-	        List<Coche> coches = dao.obtenerTodosLosCoches();
+            for (Coche coche : coches) {
+                model.addRow(new Object[] {
+                    coche.getId(),
+                    coche.getMarca(),
+                    coche.getModelo(),
+                    coche.getAnio(),
+                    coche.getPrecio(),
+                    coche.getCaballos(),
+                    coche.getCilindrada(),
+                    coche.isDisponible() ? "Sí" : "No"
+                });
+            }
 
-	        for (Coche coche : coches) {
-	            System.out.println("Coche agregado: " + coche.getMarca() + " " + coche.getModelo()); // Verifica que los datos se agregan
-	            model.addRow(new Object[] {
-	                coche.getMarca(),
-	                coche.getModelo(),
-	                coche.getAnio(),
-	                coche.getPrecio(),
-	                coche.getCaballos(),
-	                coche.getCilindrada(),
-	                coche.isDisponible() ? "Sí" : "No"
-	            });
-	        }
+            conexion.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
-	        conexion.close();
-	    } catch (SQLException e) {
-	        e.printStackTrace();
-	    }
+        scrollPane.setOpaque(false);
+        scrollPane.getViewport().setOpaque(false);
+        scrollPane.setBorder(null);
 
-	 // Hacer scrollPane y su viewport transparentes
-	    scrollPane.setOpaque(false);
-	    scrollPane.getViewport().setOpaque(false);
-	    scrollPane.setBorder(null);
+        tableCoches.setOpaque(false);
+        tableCoches.setBackground(new Color(255, 255, 255, 100));
+        tableCoches.setForeground(Color.BLACK);
+        tableCoches.setGridColor(new Color(255, 255, 255, 60));
 
-	    // Tabla transparente y sin bordes visibles
-	    tableCoches.setOpaque(false);
-	    tableCoches.setBackground(new Color(255, 255, 255, 100)); // Más transparencia
-	    tableCoches.setForeground(Color.BLACK); // Texto claro
-	    tableCoches.setGridColor(new Color(255, 255, 255, 60)); // Líneas muy suaves
+        JTableHeader header = tableCoches.getTableHeader();
+        header.setOpaque(false);
+        header.setBackground(new Color(255, 255, 255, 120));
+        header.setForeground(Color.BLACK);
+        header.setFont(new Font("Segoe UI", Font.BOLD, 8));
 
-	    // Encabezado también semitransparente y estético
-	    JTableHeader header = tableCoches.getTableHeader();
-	    header.setOpaque(false);
-	    header.setBackground(new Color(255, 255, 255, 120));
-	    header.setForeground(Color.BLACK);
-	    header.setFont(new Font("Segoe UI", Font.BOLD, 8));
-	}
+        JButton btnAlquilar = new JButton("Alquilar Coche");
+        btnAlquilar.setBounds(180, 250, 130, 25);
+        contentPane.add(btnAlquilar);
+
+        btnAlquilar.addActionListener(e -> {
+            int fila = tableCoches.getSelectedRow();
+
+            if (fila == -1) {
+                JOptionPane.showMessageDialog(this, "Por favor, selecciona un coche.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
+            int idCoche = Integer.parseInt(tableCoches.getModel().getValueAt(fila, 0).toString());
+            double precio = Double.parseDouble(tableCoches.getModel().getValueAt(fila, 4).toString());
+            int dias = 1;
+            double total = precio * dias;
+
+            try (Connection conn = ConexionBD.conectar()) {
+                String sql = """
+                    INSERT INTO alquileres (id_cliente, id_coche, fecha_inicio, dias, total)
+                    VALUES (?, ?, CURDATE(), ?, ?)
+                """;
+
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                stmt.setInt(1, cliente.getId());
+                stmt.setInt(2, idCoche);
+                stmt.setInt(3, dias);
+                stmt.setDouble(4, total);
+
+                int result = stmt.executeUpdate();
+                if (result > 0) {
+                    JOptionPane.showMessageDialog(this, "¡Alquiler registrado correctamente!");
+                    dispose();
+                    new AlquileresView(cliente).setVisible(true);
+                }
+
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Error al registrar el alquiler.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        JButton btnVolver = new JButton("Volver Atrás");
+        btnVolver.setBounds(180, 290, 130, 25);
+        btnVolver.setBackground(new Color(30, 30, 30));
+        btnVolver.setForeground(Color.WHITE);
+        btnVolver.setFocusPainted(false);
+        btnVolver.setFont(new Font("Tahoma", Font.BOLD, 12));
+        contentPane.add(btnVolver);
+
+        btnVolver.addActionListener(e -> {
+            new PrincipalView(cliente).setVisible(true);
+            dispose();
+        });
+    }
 }
