@@ -32,6 +32,7 @@ public class CochesView extends JFrame {
     private JPanel contentPane;
     private JTable tableCoches;
     private Cliente cliente;
+    private JButton btnAlquilar;
 
     public CochesView(Cliente cliente) {
         this.cliente = cliente;
@@ -43,7 +44,7 @@ public class CochesView extends JFrame {
         setBounds(100, 100, 500, 400);
         setLocationRelativeTo(null);
 
-        contentPane = new JPanel() {
+        JPanel fondoPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
@@ -52,8 +53,10 @@ public class CochesView extends JFrame {
                 g.drawImage(img, 0, 0, getWidth(), getHeight(), this);
             }
         };
-        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        contentPane.setLayout(null);
+        fondoPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
+        fondoPanel.setLayout(null);
+
+        this.contentPane = fondoPanel;
         setContentPane(contentPane);
 
         JLabel lblTitulo = new JLabel("Coches Disponibles");
@@ -69,7 +72,13 @@ public class CochesView extends JFrame {
         tableCoches = new JTable();
         scrollPane.setViewportView(tableCoches);
 
-        DefaultTableModel model = new DefaultTableModel();
+        DefaultTableModel model = new DefaultTableModel() {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
         model.setColumnIdentifiers(new String[] {
             "ID", "Marca", "Modelo", "Año", "Precio por día (€)", "Caballos", "Cilindrada", "Disponible"
         });
@@ -98,6 +107,19 @@ public class CochesView extends JFrame {
             e.printStackTrace();
         }
 
+        tableCoches.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                int row = tableCoches.getSelectedRow();
+                if (row >= 0) {
+                    String disponible = tableCoches.getValueAt(row, 7).toString();
+                    btnAlquilar.setEnabled(disponible.equalsIgnoreCase("Sí"));
+
+                    int idCoche = (int) tableCoches.getValueAt(row, 0);
+                    new DetalleCocheView(idCoche);
+                }
+            }
+        });
+
         scrollPane.setOpaque(false);
         scrollPane.getViewport().setOpaque(false);
         scrollPane.setBorder(null);
@@ -113,8 +135,9 @@ public class CochesView extends JFrame {
         header.setForeground(Color.BLACK);
         header.setFont(new Font("Segoe UI", Font.BOLD, 8));
 
-        JButton btnAlquilar = new JButton("Alquilar Coche");
+        btnAlquilar = new JButton("Alquilar Coche");
         btnAlquilar.setBounds(180, 250, 130, 25);
+        btnAlquilar.setEnabled(false);
         contentPane.add(btnAlquilar);
 
         btnAlquilar.addActionListener(e -> {
@@ -125,9 +148,25 @@ public class CochesView extends JFrame {
                 return;
             }
 
+            String input = JOptionPane.showInputDialog(this, "¿Cuántos días deseas alquilar el coche?");
+            if (input == null || input.trim().isEmpty()) {
+                return; // Cancelado
+            }
+
+            int dias;
+            try {
+                dias = Integer.parseInt(input.trim());
+                if (dias <= 0) {
+                    JOptionPane.showMessageDialog(this, "Debe ingresar un número positivo.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Entrada inválida. Introduce un número.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
             int idCoche = Integer.parseInt(tableCoches.getModel().getValueAt(fila, 0).toString());
             double precio = Double.parseDouble(tableCoches.getModel().getValueAt(fila, 4).toString());
-            int dias = 1;
             double total = precio * dias;
 
             try (Connection conn = ConexionBD.conectar()) {
@@ -144,9 +183,15 @@ public class CochesView extends JFrame {
 
                 int result = stmt.executeUpdate();
                 if (result > 0) {
-                    JOptionPane.showMessageDialog(this, "¡Alquiler registrado correctamente!");
-                    dispose();
-                    new AlquileresView(cliente).setVisible(true);
+                    String sqlUpdate = "UPDATE coches SET disponible = 0 WHERE id = ?";
+                    PreparedStatement stmtUpdate = conn.prepareStatement(sqlUpdate);
+                    stmtUpdate.setInt(1, idCoche);
+                    stmtUpdate.executeUpdate();
+
+                    tableCoches.setValueAt("No", fila, 7); // columna 7 = Disponible
+                    btnAlquilar.setEnabled(false);
+
+                    JOptionPane.showMessageDialog(this, "¡Alquiler registrado correctamente por " + dias + " día(s)!");
                 }
 
             } catch (SQLException ex) {

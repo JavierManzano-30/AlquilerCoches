@@ -39,23 +39,33 @@ public class CocheDAO {
     }
 
     public Coche obtenerCochePorId(int id) throws SQLException {
-        String sql = "SELECT * FROM coches WHERE id = ?";
+        String sql = "SELECT c.id AS coche_id, m.nombre AS marca, mo.nombre AS modelo, " +
+                     "c.año, c.precio_dia, c.disponible, c.caballos, c.cilindrada " +
+                     "FROM coches c " +
+                     "JOIN modelo mo ON c.id_modelo = mo.id " +
+                     "JOIN marca m ON mo.id_marca = m.id " +
+                     "WHERE c.id = ?";
+
         try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
             stmt.setInt(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     return new Coche(
-                        rs.getInt("id"),
+                        rs.getInt("coche_id"),
                         rs.getString("marca"),
                         rs.getString("modelo"),
-                        rs.getInt("anio"),
-                        rs.getDouble("precio")
+                        rs.getInt("año"),
+                        rs.getDouble("precio_dia"),
+                        rs.getBoolean("disponible"),
+                        rs.getInt("caballos"),
+                        rs.getInt("cilindrada")
                     );
                 }
             }
         }
         return null;
     }
+
 
     public void insertarCoche(Coche coche) throws SQLException {
         String sql = "INSERT INTO coches (marca, modelo, anio, precio) VALUES (?, ?, ?, ?)";

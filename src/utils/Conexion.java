@@ -1,6 +1,8 @@
 package utils;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 
 public class Conexion {
 
@@ -11,14 +13,18 @@ public class Conexion {
     private static Connection conexion = null;
 
     public static Connection getConexion() {
-        if (conexion == null) {
-            try {
+        try {
+            if (conexion == null || conexion.isClosed()) {
                 Class.forName("com.mysql.cj.jdbc.Driver");
                 conexion = DriverManager.getConnection(URL, USER, PASSWORD);
-                System.out.println("Conexión establecida correctamente.");
-            } catch (ClassNotFoundException | SQLException e) {
-                e.printStackTrace();
+                System.out.println("✔ Conexión establecida correctamente.");
             }
+        } catch (ClassNotFoundException e) {
+            System.err.println("❌ Error: No se encontró el driver JDBC.");
+            e.printStackTrace();
+        } catch (SQLException e) {
+            System.err.println("❌ Error al conectar a la base de datos.");
+            e.printStackTrace();
         }
         return conexion;
     }
@@ -27,9 +33,10 @@ public class Conexion {
         try {
             if (conexion != null && !conexion.isClosed()) {
                 conexion.close();
-                System.out.println("Conexión cerrada.");
+                System.out.println("🔌 Conexión cerrada correctamente.");
             }
         } catch (SQLException e) {
+            System.err.println("❌ Error al cerrar la conexión.");
             e.printStackTrace();
         }
     }
