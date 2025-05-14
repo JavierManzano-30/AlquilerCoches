@@ -115,7 +115,7 @@ public class CochesView extends JFrame {
                     btnAlquilar.setEnabled(disponible.equalsIgnoreCase("Sí"));
 
                     int idCoche = (int) tableCoches.getValueAt(row, 0);
-                    new DetalleCocheView(idCoche);
+                    new DetalleCocheView(idCoche, cliente, CochesView.this);
                 }
             }
         });
