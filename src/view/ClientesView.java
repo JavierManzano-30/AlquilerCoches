@@ -1,96 +1,120 @@
 package view;
 
-import java.awt.*;
+import dao.ClienteDAO;
+import model.Cliente;
+
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
+import java.awt.*;
 
-public class ClientesView extends JFrame {
+/**
+ * Vista para mostrar y actualizar los datos del cliente logueado.
+ */
+public class ClientesView extends BaseView {
 
-    private static final long serialVersionUID = 1L;
-    private JPanel contentPane;
     private JTextField txtNombre;
     private JTextField txtApellido;
     private JTextField txtEmail;
     private JTextField txtTelefono;
+    private JLabel lblMensaje;
 
-    public static void main(String[] args) {
-        EventQueue.invokeLater(() -> {
-            try {
-                ClientesView frame = new ClientesView();
-                frame.setVisible(true);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
+    private final Cliente clienteActual;
+
+    public ClientesView(Cliente cliente) {
+        super("Mi Perfil", 450, 380);
+        this.clienteActual = cliente;
     }
 
-    public ClientesView() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(100, 100, 400, 300);
-
-        // Panel con fondo personalizado
-        contentPane = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                ImageIcon fondo = new ImageIcon("src/utils/image/ClientesImage.jpg");
-                Image img = fondo.getImage();
-                g.drawImage(img, 0, 0, getWidth(), getHeight(), this);
-            }
-        };
-
-        contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-        contentPane.setLayout(null);
-        setContentPane(contentPane);
+    @Override
+    protected void inicializarComponentes() {
+        panelPrincipal.setLayout(null);
 
         JLabel lblTitulo = new JLabel("Mi Perfil");
-        lblTitulo.setBounds(160, 10, 100, 25);
-        lblTitulo.setForeground(Color.WHITE);
         lblTitulo.setFont(new Font("Tahoma", Font.BOLD, 16));
-        contentPane.add(lblTitulo);
+        lblTitulo.setBounds(180, 10, 200, 30);
+        panelPrincipal.add(lblTitulo);
 
-        JLabel lblNombre = new JLabel("Nombre:");
-        lblNombre.setBounds(50, 50, 80, 20);
-        lblNombre.setForeground(Color.WHITE);
-        contentPane.add(lblNombre);
+        crearLabel("Nombre:", 60);
+        txtNombre = crearCampoTexto(clienteActual.getNombre(), 60);
 
-        txtNombre = new JTextField();
-        txtNombre.setBounds(150, 50, 180, 20);
-        contentPane.add(txtNombre);
+        crearLabel("Apellido:", 100);
+        txtApellido = crearCampoTexto(clienteActual.getApellido(), 100);
 
-        JLabel lblApellido = new JLabel("Apellido:");
-        lblApellido.setBounds(50, 80, 80, 20);
-        lblApellido.setForeground(Color.WHITE);
-        contentPane.add(lblApellido);
+        crearLabel("Email:", 140);
+        txtEmail = crearCampoTexto(clienteActual.getEmail(), 140);
 
-        txtApellido = new JTextField();
-        txtApellido.setBounds(150, 80, 180, 20);
-        contentPane.add(txtApellido);
-
-        JLabel lblEmail = new JLabel("Email:");
-        lblEmail.setBounds(50, 110, 80, 20);
-        lblEmail.setForeground(Color.WHITE);
-        contentPane.add(lblEmail);
-
-        txtEmail = new JTextField();
-        txtEmail.setBounds(150, 110, 180, 20);
-        contentPane.add(txtEmail);
-
-        JLabel lblTelefono = new JLabel("Teléfono:");
-        lblTelefono.setBounds(50, 140, 80, 20);
-        lblTelefono.setForeground(Color.WHITE);
-        contentPane.add(lblTelefono);
-
-        txtTelefono = new JTextField();
-        txtTelefono.setBounds(150, 140, 180, 20);
-        contentPane.add(txtTelefono);
+        crearLabel("Teléfono:", 180);
+        txtTelefono = crearCampoTexto(clienteActual.getTelefono(), 180);
 
         JButton btnActualizar = new JButton("Actualizar datos");
-        btnActualizar.setBounds(125, 190, 150, 25);
-        btnActualizar.setBackground(new Color(30, 30, 30));
-        btnActualizar.setForeground(Color.WHITE);
-        btnActualizar.setFocusPainted(false);
-        btnActualizar.setFont(new Font("Tahoma", Font.BOLD, 12));
-        contentPane.add(btnActualizar);
+        btnActualizar.setBounds(150, 230, 200, 30);
+        panelPrincipal.add(btnActualizar);
+        btnActualizar.addActionListener(e -> actualizarDatos());
+
+        JButton btnVolver = new JButton("Volver");
+        btnVolver.setBounds(150, 270, 200, 25);
+        panelPrincipal.add(btnVolver);
+        btnVolver.addActionListener(e -> {
+            new PrincipalView(clienteActual).mostrar();
+            dispose();
+        });
+
+        lblMensaje = new JLabel("");
+        lblMensaje.setBounds(50, 310, 350, 25);
+        lblMensaje.setForeground(Color.RED);
+        panelPrincipal.add(lblMensaje);
+    }
+
+    private void crearLabel(String texto, int y) {
+        JLabel label = new JLabel(texto);
+        label.setBounds(50, y, 80, 20);
+        panelPrincipal.add(label);
+    }
+
+    private JTextField crearCampoTexto(String valor, int y) {
+        JTextField campo = new JTextField(valor);
+        campo.setBounds(150, y, 200, 25);
+        panelPrincipal.add(campo);
+        return campo;
+    }
+
+    private void actualizarDatos() {
+        String nombre = txtNombre.getText().trim();
+        String apellido = txtApellido.getText().trim();
+        String email = txtEmail.getText().trim();
+        String telefono = txtTelefono.getText().trim();
+
+        if (nombre.isEmpty() || apellido.isEmpty() || email.isEmpty()) {
+            mostrarMensaje("Los campos obligatorios no pueden estar vacíos.", Color.RED);
+            return;
+        }
+
+        if (!email.contains("@") || !email.contains(".")) {
+            mostrarMensaje("El email no tiene un formato válido.", Color.RED);
+            return;
+        }
+
+        clienteActual.setNombre(nombre);
+        clienteActual.setApellido(apellido);
+        clienteActual.setEmail(email);
+        clienteActual.setTelefono(telefono);
+
+        ClienteDAO dao = new ClienteDAO();
+        boolean actualizado = dao.actualizarCliente(clienteActual);
+
+        if (actualizado) {
+            mostrarMensaje("Datos actualizados correctamente.", Color.GREEN);
+        } else {
+            mostrarMensaje("Error al actualizar los datos.", Color.RED);
+        }
+    }
+
+    private void mostrarMensaje(String texto, Color color) {
+        lblMensaje.setText(texto);
+        lblMensaje.setForeground(color);
+    }
+
+    public static void main(String[] args) {
+        Cliente clienteMock = new Cliente(1, "Juan", "Pérez", "juan@email.com", "123456789", "1234");
+        SwingUtilities.invokeLater(() -> new ClientesView(clienteMock).mostrar());
     }
 }

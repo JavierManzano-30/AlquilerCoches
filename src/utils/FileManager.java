@@ -5,6 +5,7 @@ import java.io.BufferedWriter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -74,20 +75,32 @@ public class FileManager {
             bw.write(String.format("Teléfono: %s\n", cliente.getTelefono()));
             bw.write(String.format("Fecha   : %s\n", LocalDate.now().format(FMT)));
             bw.write("\n----------------------------------------------------\n");
-            bw.write(String.format("%-6s %-12s %-12s %-5s %-10s\n", "ID", "Marca", "Modelo", "Días", "Total (€)"));
-            bw.write("----------------------------------------------------\n");
-            double suma = 0;
-            for (DetalleAlquiler d : detalles) {
-                Coche c = d.getCoche();
-                bw.write(String.format("%-6d %-12s %-12s %-5d %-10.2f\n",
-                        c.getId(), c.getMarca(), c.getModelo(), d.getDias(), d.getTotal()));
-                suma += d.getTotal();
+
+            if (detalles.isEmpty()) {
+                bw.write("No hay alquileres registrados.\n");
+            } else {
+                bw.write(String.format("%-6s %-12s %-12s %-5s %-10s\n", "ID", "Marca", "Modelo", "Días", "Total (€)"));
+                bw.write("----------------------------------------------------\n");
+
+                double suma = 0;
+                for (DetalleAlquiler d : detalles) {
+                    Coche c = d.getCoche();
+                    bw.write(String.format("%-6d %-12s %-12s %-5d %-10.2f\n",
+                            c.getId(), c.getMarca(), c.getModelo(), d.getDias(), d.getTotal()));
+                    suma += d.getTotal();
+                }
+
+                bw.write("----------------------------------------------------\n");
+                bw.write(String.format("%-36s %10.2f €\n", "TOTAL A PAGAR:", suma));
             }
-            bw.write("----------------------------------------------------\n");
-            bw.write(String.format("%-36s %10.2f €\n", "TOTAL A PAGAR:", suma));
+
             bw.write("====================================================\n");
             bw.write("Gracias por confiar en nosotros. ¡Conduce con pasión!\n");
             bw.write("====================================================\n");
         }
+    }
+
+    public static String leerFactura(Path ruta) throws IOException {
+        return Files.readString(ruta);
     }
 }

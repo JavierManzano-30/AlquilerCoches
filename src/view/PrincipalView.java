@@ -1,62 +1,51 @@
 package view;
 
+import model.Cliente;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import javax.swing.*;
 
-import model.Cliente;
+/**
+ * Vista principal que actúa como menú de navegación para el cliente logueado.
+ */
+public class PrincipalView extends BaseView {
 
-public class PrincipalView extends JFrame {
-
-    private static final long serialVersionUID = 1L;
-    private JPanel contentPane;
     private final Color COLOR_BASE = new Color(137, 161, 251);
     private final Color COLOR_HOVER = new Color(107, 131, 221);
-    private final ImageIcon iconoFondo = new ImageIcon(getClass().getResource("/utils/image/LoginImage.jpg"));
-    private final ImageIcon Fondo = new ImageIcon(getClass().getResource("/utils/image/PrincipalImage.jpg"));
-    private Cliente clienteLogueado;
+    private final Cliente clienteLogueado;
 
-    private void initUI() {
-        setTitle("Alquiler de Coches");
-        setIconImage(iconoFondo.getImage());
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 400);
-        setMinimumSize(new Dimension(400, 300));
-        setLocationRelativeTo(null);
+    public PrincipalView(Cliente clienteLogueado) {
+        super("Alquiler de Coches - Inicio", 600, 400);
+        this.clienteLogueado = clienteLogueado;
+    }
 
-        contentPane = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                g.drawImage(Fondo.getImage(), 0, 0, getWidth(), getHeight(), this);
-            }
-        };
-
-        contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
-        setContentPane(contentPane);
-
-        contentPane.add(Box.createVerticalStrut(40));
+    @Override
+    protected void inicializarComponentes() {
+        panelPrincipal.setLayout(new BoxLayout(panelPrincipal, BoxLayout.Y_AXIS));
+        panelPrincipal.setBackground(Color.WHITE);
+        panelPrincipal.setBorder(BorderFactory.createEmptyBorder(40, 50, 40, 50));
 
         JLabel lblBienvenido = new JLabel("Bienvenido " + clienteLogueado.getNombre());
         lblBienvenido.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblBienvenido.setFont(new Font("SansSerif", Font.BOLD, 22));
-        lblBienvenido.setForeground(Color.BLACK);
-        contentPane.add(lblBienvenido);
+        lblBienvenido.setForeground(Color.DARK_GRAY);
+        panelPrincipal.add(lblBienvenido);
 
-        contentPane.add(Box.createVerticalStrut(30));
-        contentPane.add(crearBoton("Ver Coches"));
-        contentPane.add(Box.createVerticalStrut(10));
-        contentPane.add(crearBoton("Mis Alquileres"));
-        contentPane.add(Box.createVerticalStrut(10));
-        contentPane.add(crearBoton("Cerrar Sesión"));
+        panelPrincipal.add(Box.createVerticalStrut(30));
+        panelPrincipal.add(crearBoton("Ver Coches"));
+        panelPrincipal.add(Box.createVerticalStrut(10));
+        panelPrincipal.add(crearBoton("Mis Alquileres"));
+        panelPrincipal.add(Box.createVerticalStrut(10));
+        panelPrincipal.add(crearBoton("Mi Perfil"));
+        panelPrincipal.add(Box.createVerticalStrut(10));
+        panelPrincipal.add(crearBoton("Cerrar Sesión"));
     }
 
-    public PrincipalView(Cliente clienteLogueado) {
-        this.clienteLogueado = clienteLogueado;
-        initUI(); // método para construir la interfaz
-    }
-
+    /**
+     * Crea un botón estilizado con funcionalidad específica según su texto.
+     */
     private JButton crearBoton(String texto) {
         JButton boton = new JButton(texto) {
             private Color currentColor = COLOR_BASE;
@@ -86,7 +75,7 @@ public class PrincipalView extends JFrame {
                 setBorderPainted(false);
                 setFocusPainted(false);
                 setAlignmentX(Component.CENTER_ALIGNMENT);
-                setMaximumSize(new Dimension(200, 40));
+                setMaximumSize(new Dimension(250, 40));
 
                 addMouseListener(new MouseAdapter() {
                     @Override
@@ -102,28 +91,36 @@ public class PrincipalView extends JFrame {
                     }
                 });
 
-                // 💡 Acciones para cada botón
-                addActionListener(e -> {
-                    switch (texto) {
-                        case "Ver Coches":
-                            new CochesView(clienteLogueado).setVisible(true);
-                            dispose();
-                            break;
-                        case "Mis Alquileres":
-                            new AlquileresView(clienteLogueado).setVisible(true);
-                            dispose();
-                            break;
-                        case "Cerrar Sesión":
-                            new LoginView().setVisible(true);
-                            dispose();
-                            break;
-                    }
-                });
-
+                addActionListener(e -> manejarAccion(texto));
             }
         };
 
         return boton;
     }
 
+    /**
+     * Define qué hacer según el botón presionado.
+     */
+    private void manejarAccion(String texto) {
+        switch (texto) {
+            case "Ver Coches":
+                new CochesView(clienteLogueado).mostrar();
+                break;
+            case "Mis Alquileres":
+                new AlquileresView(clienteLogueado).mostrar();
+                break;
+            case "Mi Perfil":
+                new ClientesView(clienteLogueado).mostrar();
+                break;
+            case "Cerrar Sesión":
+                new LoginView().mostrar();
+                break;
+        }
+        dispose();
+    }
+
+    public static void main(String[] args) {
+        Cliente clienteMock = new Cliente(1, "Carlos", "García", "carlos@email.com", "000000000", "pass123");
+        SwingUtilities.invokeLater(() -> new PrincipalView(clienteMock).mostrar());
+    }
 }

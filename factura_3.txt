@@ -2,17 +2,18 @@
      🚗 JAPANESE SPORTS CAR RENTAL - FACTURA 🚗     
 ====================================================
 
-Cliente : Antonio Ortega
-Email   : antonio@gmail.com
-Teléfono: 608183482
-Fecha   : 14/05/2025
+Cliente : p p
+Email   : p@p.p
+Teléfono: 666666666
+Fecha   : 15/05/2025
 
 ----------------------------------------------------
 ID     Marca        Modelo       Días  Total (€) 
 ----------------------------------------------------
-1      Toyota       Supra        9     1170,00   
+1      Toyota       Corolla      6     240,00    
+3      Nissan       Skyline      1     85,00     
 ----------------------------------------------------
-TOTAL A PAGAR:                          1170,00 €
+TOTAL A PAGAR:                           325,00 €
 ====================================================
 Gracias por confiar en nosotros. ¡Conduce con pasión!
 ====================================================

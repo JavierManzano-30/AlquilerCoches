@@ -1,150 +1,116 @@
 package view;
 
+import dao.AlquilerDAO;
+import model.Alquiler;
+import model.Cliente;
+import model.Coche;
+
 import javax.swing.*;
 import java.awt.*;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
+import java.time.LocalDate;
 
-import dao.CocheDAO;
-import model.Coche;
-import model.Cliente;
-import utils.Conexion;
+/**
+ * Vista para mostrar los detalles de un coche individual.
+ */
+public class DetalleCocheView extends BaseView {
 
-public class DetalleCocheView extends JFrame {
-    private Coche coche;
-    private Cliente cliente;
-    private JFrame ventanaAnterior;
+    public JPanel panelPrincipal;
 
-    public DetalleCocheView(int idCoche, Cliente cliente, JFrame ventanaAnterior) {
+    private final Coche coche;
+    private final Cliente cliente;
+
+    public DetalleCocheView(Coche coche, Cliente cliente) {
+        super("Detalle del Coche", 500, 450);
+        this.coche = coche;
         this.cliente = cliente;
-        this.ventanaAnterior = ventanaAnterior;
+    }
 
-        setTitle("Detalle del Coche");
-        setSize(500, 500);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLayout(new BorderLayout());
-
-        try (Connection conn = Conexion.getConexion()) {
-            CocheDAO dao = new CocheDAO(conn);
-            this.coche = dao.obtenerCochePorId(idCoche);
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Error al conectar con la base de datos.");
-            dispose();
-            return;
+    @Override
+    public void inicializarComponentes() {
+        if (panelPrincipal == null) {
+            panelPrincipal = new JPanel();
         }
 
-        if (this.coche == null) {
-            JOptionPane.showMessageDialog(this, "No se encontró el coche con ID: " + idCoche);
-            dispose();
-            return;
-        }
+        panelPrincipal.setLayout(new BorderLayout());
 
         JPanel panelDatos = new JPanel();
         panelDatos.setLayout(new BoxLayout(panelDatos, BoxLayout.Y_AXIS));
-        panelDatos.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        panelDatos.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
         JLabel lblImagen = new JLabel();
         try {
-            String rutaImagen = "/utils/image/" + coche.getMarca().toLowerCase() + "_detalle.jpg";
-            ImageIcon icon = new ImageIcon(getClass().getResource(rutaImagen));
-            Image imgEscalada = icon.getImage().getScaledInstance(350, 160, Image.SCALE_SMOOTH);
-            lblImagen.setIcon(new ImageIcon(imgEscalada));
-
-            lblImagen.setAlignmentX(Component.CENTER_ALIGNMENT);
-            panelDatos.add(lblImagen);
-
-            JButton btnVerGrande = new JButton("Ver imagen grande");
-            btnVerGrande.setAlignmentX(Component.CENTER_ALIGNMENT);
-            btnVerGrande.addActionListener(ev -> {
-                try {
-                    ImageIcon originalIcon = new ImageIcon(getClass().getResource(rutaImagen));
-                    JLabel label = new JLabel(originalIcon);
-
-                    JFrame viewer = new JFrame("Vista de imagen original");
-                    viewer.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-                    viewer.getContentPane().add(new JScrollPane(label));
-                    viewer.pack();
-                    viewer.setLocationRelativeTo(null);
-                    viewer.setVisible(true);
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "No se pudo cargar la imagen completa.");
-                }
-            });
-            panelDatos.add(btnVerGrande);
-
+            String path = "/utils/image/" + coche.getMarca().toLowerCase() + "_detalle.jpg";
+            java.net.URL url = getClass().getResource(path);
+            if (url != null) {
+                ImageIcon icon = new ImageIcon(url);
+                Image scaled = icon.getImage().getScaledInstance(380, 150, Image.SCALE_SMOOTH);
+                lblImagen.setIcon(new ImageIcon(scaled));
+            } else {
+                lblImagen.setText("[Imagen no disponible]");
+            }
         } catch (Exception e) {
-            lblImagen.setText("[Imagen no disponible]");
-            panelDatos.add(lblImagen);
+            lblImagen.setText("[Error al cargar imagen]");
         }
 
-        panelDatos.add(Box.createRigidArea(new Dimension(0, 10)));
+        lblImagen.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panelDatos.add(lblImagen);
+        panelDatos.add(Box.createVerticalStrut(10));
+
         panelDatos.add(new JLabel("Marca: " + coche.getMarca()));
         panelDatos.add(new JLabel("Modelo: " + coche.getModelo()));
         panelDatos.add(new JLabel("Año: " + coche.getAnio()));
-        panelDatos.add(new JLabel("Cilindrada: " + coche.getCilindrada() + " cc"));
         panelDatos.add(new JLabel("Caballos: " + coche.getCaballos() + " HP"));
-        panelDatos.add(new JLabel("Precio por día: $" + coche.getPrecio()));
+        panelDatos.add(new JLabel("Cilindrada: " + coche.getCilindrada() + " cc"));
+        panelDatos.add(new JLabel("Precio por día: €" + coche.getPrecio()));
 
         JPanel panelBotones = new JPanel();
         JButton btnAlquilar = new JButton("Alquilar");
         JButton btnVolver = new JButton("Volver");
 
-        btnAlquilar.addActionListener(e -> {
-            String input = JOptionPane.showInputDialog(this, "¿Cuántos días deseas alquilar el coche?");
-            if (input == null || input.trim().isEmpty()) return;
-
-            int dias;
-            try {
-                dias = Integer.parseInt(input.trim());
-                if (dias <= 0) {
-                    JOptionPane.showMessageDialog(this, "Debe ingresar un número positivo.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Entrada inválida. Introduce un número.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-
-            double total = coche.getPrecio() * dias;
-
-            try (Connection conn = Conexion.getConexion()) {
-                String sqlAlquiler = """
-                    INSERT INTO alquileres (id_cliente, id_coche, fecha_inicio, dias, total)
-                    VALUES (?, ?, CURDATE(), ?, ?)
-                """;
-                PreparedStatement stmt = conn.prepareStatement(sqlAlquiler);
-                stmt.setInt(1, cliente.getId());
-                stmt.setInt(2, coche.getId());
-                stmt.setInt(3, dias);
-                stmt.setDouble(4, total);
-                stmt.executeUpdate();
-
-                String sqlUpdate = "UPDATE coches SET disponible = 0 WHERE id = ?";
-                PreparedStatement stmtUpdate = conn.prepareStatement(sqlUpdate);
-                stmtUpdate.setInt(1, coche.getId());
-                stmtUpdate.executeUpdate();
-
-                JOptionPane.showMessageDialog(this, "¡Alquiler realizado por " + dias + " día(s)!");
-                new AlquileresView(cliente).setVisible(true);
-                dispose();
-                ventanaAnterior.dispose();
-
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                JOptionPane.showMessageDialog(this, "Error al registrar el alquiler.", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+        btnAlquilar.addActionListener(e -> alquilarCoche());
+        btnVolver.addActionListener(e -> {
+            Window ventana = SwingUtilities.getWindowAncestor(panelPrincipal);
+            if (ventana != null) ventana.dispose();
         });
-
-        btnVolver.addActionListener(e -> dispose());
 
         panelBotones.add(btnAlquilar);
         panelBotones.add(btnVolver);
 
-        add(panelDatos, BorderLayout.CENTER);
-        add(panelBotones, BorderLayout.SOUTH);
+        panelPrincipal.add(panelDatos, BorderLayout.CENTER);
+        panelPrincipal.add(panelBotones, BorderLayout.SOUTH);
+    }
 
-        setVisible(true);
+    private void alquilarCoche() {
+        String input = JOptionPane.showInputDialog(this.panelPrincipal, "¿Cuántos días deseas alquilar el coche?");
+        if (input == null || input.trim().isEmpty()) return;
+
+        int dias;
+        try {
+            dias = Integer.parseInt(input.trim());
+            if (dias <= 0) throw new NumberFormatException();
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this.panelPrincipal, "Número de días inválido.");
+            return;
+        }
+
+        double total = dias * coche.getPrecio();
+        Alquiler alquiler = new Alquiler();
+        alquiler.setIdCliente(cliente.getId());
+        alquiler.setIdCoche(coche.getId());
+        alquiler.setFechaInicio(LocalDate.now().toString());
+        alquiler.setFechaFin(LocalDate.now().plusDays(dias).toString());
+        alquiler.setTotal(total);
+
+        AlquilerDAO dao = new AlquilerDAO();
+        boolean exito = dao.crearAlquiler(alquiler);
+
+        if (exito) {
+            JOptionPane.showMessageDialog(this.panelPrincipal, "¡Alquiler realizado correctamente!");
+            Window ventana = SwingUtilities.getWindowAncestor(panelPrincipal);
+            if (ventana != null) ventana.dispose();
+            new AlquileresView(cliente).mostrar();
+        } else {
+            JOptionPane.showMessageDialog(this.panelPrincipal, "Error al registrar el alquiler.");
+        }
     }
 }
