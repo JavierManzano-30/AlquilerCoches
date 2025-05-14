@@ -113,7 +113,7 @@ public class PrincipalView extends BaseView {
                 new ClientesView(clienteLogueado).mostrar();
                 break;
             case "Cerrar Sesión":
-                new LoginView().mostrar();
+            	new LoginView().setVisible(true);
                 break;
         }
         dispose();
