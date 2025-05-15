@@ -64,7 +64,7 @@ public class LoginView extends JFrame {
         panelControles.add(btnCerrar);
         panelForm.add(panelControles);
 
-        JLabel lblTitulo = new JLabel("RentJMDCAR");
+        JLabel lblTitulo = new JLabel("RentJDMCAR");
         lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 20));
         lblTitulo.setBounds(85, 60, 200, 30);
         panelForm.add(lblTitulo);
