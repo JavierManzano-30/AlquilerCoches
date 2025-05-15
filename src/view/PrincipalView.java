@@ -55,15 +55,6 @@ public class PrincipalView extends JFrame {
         btnClose.addActionListener(e -> System.exit(0));
         panelFondo.add(btnClose);
 
-        // Etiqueta usuario arriba derecha
-        JLabel lblUsuario = new JLabel("  " + cliente.getNombre());
-        lblUsuario.setBounds(720, 10, 190, 25);
-        lblUsuario.setOpaque(true);
-        lblUsuario.setBackground(new Color(255, 255, 255, 180));
-        lblUsuario.setFont(new Font("Monospaced", Font.BOLD, 13));
-        lblUsuario.setIcon(new ImageIcon(getClass().getResource("/utils/image/user_icon.jpg")));
-        panelFondo.add(lblUsuario);
-
         // Título
         JLabel lblTitulo = new JLabel("RENTJDMCAR");
         lblTitulo.setBounds(380, 40, 400, 40);
