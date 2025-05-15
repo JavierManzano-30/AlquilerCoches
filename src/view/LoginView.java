@@ -69,7 +69,7 @@ public class LoginView extends JFrame {
         lblTitulo.setBounds(85, 60, 200, 30);
         panelForm.add(lblTitulo);
 
-        JLabel lblUsuario = new JLabel("Usuario:");
+        JLabel lblUsuario = new JLabel("Correo:");
         lblUsuario.setBounds(30, 120, 240, 20);
         panelForm.add(lblUsuario);
 
