@@ -1,187 +1,163 @@
 package view;
 
-import dao.AlquilerDAO;
-import dao.CocheDAO;
 import model.Cliente;
-import model.Coche;
-import model.Alquiler;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 import java.awt.*;
-import java.util.List;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.net.URL;
 
-/**
- * Vista para que el cliente consulte y alquile coches disponibles.
- */
-public class CochesView extends BaseView {
+public class CochesView extends JFrame {
 
-    private JTable tableCoches;
-    private JButton btnAlquilar;
     private Cliente cliente;
-    private List<Coche> listaCoches;
 
     public CochesView(Cliente cliente) {
-        super("Alquiler de Coches", 600, 400);
         this.cliente = cliente;
-    }
+        setTitle("Alquiler de Coches");
+        setSize(1000, 500);
+        setUndecorated(true);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLayout(new BorderLayout());
 
-    @Override
-    protected void inicializarComponentes() {
-        panelPrincipal.setLayout(null);
+        JPanel contenedor = new JPanel(new BorderLayout());
+        contenedor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2));
+        setContentPane(contenedor);
 
-        JLabel lblTitulo = new JLabel("Coches Disponibles");
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 18));
-        lblTitulo.setBounds(200, 10, 250, 25);
-        panelPrincipal.add(lblTitulo);
+        // Panel fondo
+        JPanel panelFondo = new JPanel() {
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                URL imageUrl = getClass().getResource("/utils/image/fondo_alquiler.jpg");
+                if (imageUrl == null) {
+                    System.err.println("⚠ Error: No se encontró la imagen fondo_alquiler.jpg en /utils/image/");
+                    return;
+                }
+                ImageIcon icon = new ImageIcon(imageUrl);
+                Image img = icon.getImage();
 
-        JScrollPane scrollPane = new JScrollPane();
-        scrollPane.setBounds(20, 50, 550, 200);
-        panelPrincipal.add(scrollPane);
+                int panelW = getWidth();
+                int panelH = getHeight();
 
-        tableCoches = new JTable();
-        scrollPane.setViewportView(tableCoches);
+                double scale = (double) panelH / img.getHeight(null);
+                int scaledW = (int) (img.getWidth(null) * scale);
+                int x = panelW - scaledW;
 
-        DefaultTableModel model = new DefaultTableModel() {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
+                g.drawImage(img, x, 0, scaledW, panelH, this);
+
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setColor(new Color(0, 0, 0, 150));
+                g2d.fillRect(0, 0, panelW, panelH);
+                g2d.dispose();
             }
         };
+        contenedor.add(panelFondo, BorderLayout.CENTER);
+        panelFondo.setLayout(null);
 
-        model.setColumnIdentifiers(new String[] {
-            "ID", "Marca", "Modelo", "Año", "Precio/día", "Caballos", "Cilindrada", "Disponible"
-        });
+        // Barra superior
+        JPanel topBar = new JPanel(null);
+        topBar.setBackground(Color.WHITE);
+        topBar.setBounds(0, 0, 1000, 40);
 
-        tableCoches.setModel(model);
-        cargarCoches(model);
+        JLabel user = new JLabel("👤 " + cliente.getNombre());
+        user.setFont(new Font("Monospaced", Font.BOLD, 13));
+        user.setBounds(10, 10, 180, 20);
+        topBar.add(user);
 
-        tableCoches.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                int row = tableCoches.getSelectedRow();
-                if (row >= 0) {
-                    String disponible = tableCoches.getValueAt(row, 7).toString();
-                    btnAlquilar.setEnabled(disponible.equalsIgnoreCase("Sí"));
-                }
-            }
-        });
+        JButton btnMin = crearBotonVentana("—", new Color(166, 203, 226));
+        btnMin.setBounds(920, 8, 30, 25);
+        btnMin.addActionListener(e -> setState(ICONIFIED));
+        topBar.add(btnMin);
 
-        JTableHeader header = tableCoches.getTableHeader();
-        header.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        JButton btnCerrar = crearBotonVentana("X", new Color(230, 105, 120));
+        btnCerrar.setBounds(960, 8, 30, 25);
+        btnCerrar.addActionListener(e -> System.exit(0));
+        topBar.add(btnCerrar);
 
-        btnAlquilar = new JButton("Alquilar Coche");
-        btnAlquilar.setBounds(220, 270, 150, 30);
-        btnAlquilar.setEnabled(false);
-        panelPrincipal.add(btnAlquilar);
-        btnAlquilar.addActionListener(e -> alquilarCoche());
+        panelFondo.add(topBar);
 
-        JButton btnDetalle = new JButton("Ver Detalle");
-        btnDetalle.setBounds(390, 270, 150, 30);
-        panelPrincipal.add(btnDetalle);
-        btnDetalle.addActionListener(e -> mostrarDetalle());
+        JLabel lblTitulo = new JLabel("Alquiler de Coches");
+        lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 26));
+        lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setBounds(30, 50, 400, 40);
+        panelFondo.add(lblTitulo);
 
-        JButton btnVolver = new JButton("Volver");
-        btnVolver.setBounds(20, 320, 100, 25);
-        panelPrincipal.add(btnVolver);
+        JLabel lblSub = new JLabel("Coches Disponibles");
+        lblSub.setFont(new Font("SansSerif", Font.BOLD, 22));
+        lblSub.setForeground(Color.WHITE);
+        lblSub.setBounds(370, 90, 300, 40);
+        panelFondo.add(lblSub);
+
+        // Tabla
+        JTable tabla = new JTable();
+        tabla.setModel(new DefaultTableModel(
+            new Object[][] {
+                {1, "Toyota", "Corolla", 2020, 40.0, 132, "Sí"},
+                {2, "Mazda", "RX-7", 1999, 70.0, 276, "Sí"},
+                {3, "Nissan", "Skyline", 2002, 85.0, 280, "Sí"},
+            },
+            new String[] {"ID", "Marca", "Modelo", "Año", "Precio/día", "Caballos", "Disponible"}
+        ));
+
+        JScrollPane scroll = new JScrollPane(tabla);
+        scroll.setBounds(100, 140, 800, 150);
+        panelFondo.add(scroll);
+
+        // Botones
+        JButton btnVolver = crearBoton("Volver");
+        btnVolver.setBounds(100, 320, 150, 40);
         btnVolver.addActionListener(e -> {
             new PrincipalView(cliente).setVisible(true);
             dispose();
         });
+        panelFondo.add(btnVolver);
+
+        JButton btnAlquilar = crearBoton("Alquilar Coche");
+        btnAlquilar.setBounds(330, 320, 200, 40);
+        panelFondo.add(btnAlquilar);
+
+        JButton btnDetalle = crearBoton("Ver Detalle");
+        btnDetalle.setBounds(600, 320, 200, 40);
+        panelFondo.add(btnDetalle);
     }
 
-    private void cargarCoches(DefaultTableModel model) {
-        CocheDAO dao = new CocheDAO();
-        listaCoches = dao.listarCoches();
+    private JButton crearBoton(String texto) {
+        JButton btn = new JButton(texto);
+        btn.setBackground(new Color(30, 40, 60));
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setFont(new Font("SansSerif", Font.BOLD, 15));
+        btn.setBorder(BorderFactory.createEmptyBorder());
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        for (Coche coche : listaCoches) {
-            model.addRow(new Object[] {
-                coche.getId(),
-                coche.getMarca(),
-                coche.getModelo(),
-                coche.getAnio(),
-                coche.getPrecio(),
-                coche.getCaballos(),
-                coche.getCilindrada(),
-                coche.isDisponible() ? "Sí" : "No"
-            });
-        }
+        btn.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                btn.setBackground(new Color(50, 60, 80));
+            }
+
+            public void mouseExited(MouseEvent e) {
+                btn.setBackground(new Color(30, 40, 60));
+            }
+        });
+
+        return btn;
     }
 
-    private void alquilarCoche() {
-        int fila = tableCoches.getSelectedRow();
-        if (fila == -1) {
-            JOptionPane.showMessageDialog(this, "Selecciona un coche.");
-            return;
-        }
-
-        String disponible = tableCoches.getValueAt(fila, 7).toString();
-        if (!disponible.equalsIgnoreCase("Sí")) {
-            JOptionPane.showMessageDialog(this, "Este coche no está disponible.");
-            return;
-        }
-
-        String input = JOptionPane.showInputDialog(this, "¿Cuántos días deseas alquilar el coche?");
-        if (input == null || input.trim().isEmpty()) return;
-
-        int dias;
-        try {
-            dias = Integer.parseInt(input.trim());
-            if (dias <= 0) throw new NumberFormatException();
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Número de días inválido.");
-            return;
-        }
-
-        int idCoche = (int) tableCoches.getValueAt(fila, 0);
-        double precio = Double.parseDouble(tableCoches.getValueAt(fila, 4).toString());
-        double total = precio * dias;
-
-        Alquiler alquiler = new Alquiler();
-        alquiler.setIdCliente(cliente.getId());
-        alquiler.setIdCoche(idCoche);
-        alquiler.setFechaInicio(java.time.LocalDate.now().toString());
-        alquiler.setFechaFin(java.time.LocalDate.now().plusDays(dias).toString());
-        alquiler.setTotal(total);
-
-        AlquilerDAO alquilerDAO = new AlquilerDAO();
-        boolean exito = alquilerDAO.crearAlquiler(alquiler);
-
-        if (exito) {
-            JOptionPane.showMessageDialog(this, "¡Alquiler registrado correctamente!");
-            tableCoches.setValueAt("No", fila, 7);
-            btnAlquilar.setEnabled(false);
-        } else {
-            JOptionPane.showMessageDialog(this, "Error al registrar el alquiler.");
-        }
+    private JButton crearBotonVentana(String texto, Color color) {
+        JButton btn = new JButton(texto);
+        btn.setFocusPainted(false);
+        btn.setFont(new Font("SansSerif", Font.BOLD, 12));
+        btn.setForeground(Color.WHITE);
+        btn.setBackground(color);
+        btn.setBorder(null);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return btn;
     }
 
-    private void mostrarDetalle() {
-        int fila = tableCoches.getSelectedRow();
-        if (fila == -1) {
-            JOptionPane.showMessageDialog(this, "Selecciona un coche para ver los detalles.");
-            return;
-        }
-
-        Coche coche = new Coche(
-            (int) tableCoches.getValueAt(fila, 0),
-            tableCoches.getValueAt(fila, 1).toString(),
-            tableCoches.getValueAt(fila, 2).toString(),
-            Integer.parseInt(tableCoches.getValueAt(fila, 3).toString()),
-            Double.parseDouble(tableCoches.getValueAt(fila, 4).toString()),
-            tableCoches.getValueAt(fila, 7).toString().equalsIgnoreCase("Sí"),
-            Integer.parseInt(tableCoches.getValueAt(fila, 5).toString()),
-            Integer.parseInt(tableCoches.getValueAt(fila, 6).toString())
-        );
-
-        JFrame popup = new JFrame("Detalle del coche");
-        popup.setSize(500, 450);
-        popup.setLocationRelativeTo(this);
-        popup.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
-        DetalleCocheView detalle = new DetalleCocheView(coche, cliente);
-        detalle.inicializarComponentes();
-        popup.setContentPane(detalle.panelPrincipal);
-        popup.setVisible(true);
+    public static void main(String[] args) {
+        Cliente clienteMock = new Cliente(1, "Mario", "Rossi", "mario@email.com", "123456789", "secreta");
+        SwingUtilities.invokeLater(() -> new CochesView(clienteMock).setVisible(true));
     }
 }
