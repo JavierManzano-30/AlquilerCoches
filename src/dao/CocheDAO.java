@@ -44,6 +44,19 @@ public class CocheDAO {
 
         return coches;
     }
+    
+    public boolean marcarComoNoDisponible(int idCoche) {
+        String sql = "UPDATE coches SET disponible = false WHERE id = ?";
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idCoche);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al marcar coche como no disponible: " + e.getMessage());
+            return false;
+        }
+    }
+
 
     // Resto de métodos se mantiene igual (insertar, actualizar, eliminar)...
 }

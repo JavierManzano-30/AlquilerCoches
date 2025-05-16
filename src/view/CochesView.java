@@ -1,156 +1,221 @@
 package view;
 
+import dao.AlquilerDAO;
+import dao.CocheDAO;
+import model.Alquiler;
+import model.Coche;
 import model.Cliente;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.net.URL;
+import java.time.LocalDate;
+import java.util.List;
 
 public class CochesView extends JFrame {
 
-    private Cliente cliente;
+    private final Cliente cliente;
+    private JTable tabla;
+    private DefaultTableModel modelo;
 
     public CochesView(Cliente cliente) {
         this.cliente = cliente;
-        setTitle("Alquiler de Coches");
-        setSize(1000, 500);
+
+        setTitle("Coches Disponibles");
+        setSize(1000, 600);
         setUndecorated(true);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
 
-        JPanel contenedor = new JPanel(new BorderLayout());
-        contenedor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2));
-        setContentPane(contenedor);
-
-        // Panel fondo
-        JPanel panelFondo = new JPanel() {
+        JPanel backgroundPanel = new JPanel() {
+            @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                URL imageUrl = getClass().getResource("/utils/image/fondo_alquiler.jpg");
-                if (imageUrl == null) {
-                    System.err.println("⚠ Error: No se encontró la imagen fondo_alquiler.jpg en /utils/image/");
-                    return;
+                ImageIcon icon = new ImageIcon(getClass().getResource("/utils/image/fondo_alquiler.jpg"));
+                if (icon.getImage() != null) {
+                    Image scaled = icon.getImage().getScaledInstance(getWidth(), getHeight(), Image.SCALE_SMOOTH);
+                    g.drawImage(scaled, 0, 0, this);
+                    Graphics2D g2d = (Graphics2D) g.create();
+                    g2d.setColor(new Color(0, 0, 0, 150)); // Atenuar
+                    g2d.fillRect(0, 0, getWidth(), getHeight());
+                    g2d.dispose();
                 }
-                ImageIcon icon = new ImageIcon(imageUrl);
-                Image img = icon.getImage();
-
-                int panelW = getWidth();
-                int panelH = getHeight();
-
-                double scale = (double) panelH / img.getHeight(null);
-                int scaledW = (int) (img.getWidth(null) * scale);
-                int x = panelW - scaledW;
-
-                g.drawImage(img, x, 0, scaledW, panelH, this);
-
-                Graphics2D g2d = (Graphics2D) g.create();
-                g2d.setColor(new Color(0, 0, 0, 150));
-                g2d.fillRect(0, 0, panelW, panelH);
-                g2d.dispose();
             }
         };
-        contenedor.add(panelFondo, BorderLayout.CENTER);
-        panelFondo.setLayout(null);
+        backgroundPanel.setLayout(new BorderLayout());
+        setContentPane(backgroundPanel);
 
-        // Barra superior
+        // Top bar
         JPanel topBar = new JPanel(null);
+        topBar.setPreferredSize(new Dimension(1000, 40));
         topBar.setBackground(Color.WHITE);
-        topBar.setBounds(0, 0, 1000, 40);
+        backgroundPanel.add(topBar, BorderLayout.NORTH);
 
-        JLabel user = new JLabel("👤 " + cliente.getNombre());
-        user.setFont(new Font("Monospaced", Font.BOLD, 13));
-        user.setBounds(10, 10, 180, 20);
-        topBar.add(user);
+        JLabel lblUsuario = new JLabel("👤 " + cliente.getNombre());
+        lblUsuario.setFont(new Font("Monospaced", Font.BOLD, 13));
+        lblUsuario.setBounds(10, 10, 200, 20);
+        topBar.add(lblUsuario);
 
         JButton btnMin = crearBotonVentana("—", new Color(166, 203, 226));
-        btnMin.setBounds(920, 8, 30, 25);
+        btnMin.setBounds(920, 7, 30, 25);
         btnMin.addActionListener(e -> setState(ICONIFIED));
         topBar.add(btnMin);
 
         JButton btnCerrar = crearBotonVentana("X", new Color(230, 105, 120));
-        btnCerrar.setBounds(960, 8, 30, 25);
+        btnCerrar.setBounds(960, 7, 30, 25);
         btnCerrar.addActionListener(e -> System.exit(0));
         topBar.add(btnCerrar);
 
-        panelFondo.add(topBar);
+        // Centro
+        JPanel panelCentro = new JPanel();
+        panelCentro.setOpaque(false);
+        panelCentro.setLayout(new BoxLayout(panelCentro, BoxLayout.Y_AXIS));
+        backgroundPanel.add(panelCentro, BorderLayout.CENTER);
 
-        JLabel lblTitulo = new JLabel("Alquiler de Coches");
+        JLabel lblTitulo = new JLabel("Coches Disponibles");
         lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 26));
         lblTitulo.setForeground(Color.WHITE);
-        lblTitulo.setBounds(30, 50, 400, 40);
-        panelFondo.add(lblTitulo);
+        lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        panelCentro.add(lblTitulo);
 
-        JLabel lblSub = new JLabel("Coches Disponibles");
-        lblSub.setFont(new Font("SansSerif", Font.BOLD, 22));
-        lblSub.setForeground(Color.WHITE);
-        lblSub.setBounds(370, 90, 300, 40);
-        panelFondo.add(lblSub);
-
-        // Tabla
-        JTable tabla = new JTable();
-        tabla.setModel(new DefaultTableModel(
-            new Object[][] {
-                {1, "Toyota", "Corolla", 2020, 40.0, 132, "Sí"},
-                {2, "Mazda", "RX-7", 1999, 70.0, 276, "Sí"},
-                {3, "Nissan", "Skyline", 2002, 85.0, 280, "Sí"},
-            },
-            new String[] {"ID", "Marca", "Modelo", "Año", "Precio/día", "Caballos", "Disponible"}
-        ));
+        modelo = new DefaultTableModel(new String[]{"ID", "Marca", "Modelo", "Año", "Precio/día", "Caballos", "Disponible"}, 0);
+        tabla = new JTable(modelo);
+        tabla.setRowHeight(25);
+        tabla.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        tabla.getTableHeader().setFont(new Font("SansSerif", Font.BOLD, 14));
 
         JScrollPane scroll = new JScrollPane(tabla);
-        scroll.setBounds(100, 140, 800, 150);
-        panelFondo.add(scroll);
+        scroll.setMaximumSize(new Dimension(900, 200));
+        panelCentro.add(scroll);
+
+        cargarCoches();
 
         // Botones
-        JButton btnVolver = crearBoton("Volver");
-        btnVolver.setBounds(100, 320, 150, 40);
+        JPanel panelBotones = new JPanel();
+        panelBotones.setOpaque(false);
+        panelBotones.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
+
+        JButton btnVolver = crearBotonAzul("Volver");
         btnVolver.addActionListener(e -> {
             new PrincipalView(cliente).setVisible(true);
             dispose();
         });
-        panelFondo.add(btnVolver);
 
-        JButton btnAlquilar = crearBoton("Alquilar Coche");
-        btnAlquilar.setBounds(330, 320, 200, 40);
-        panelFondo.add(btnAlquilar);
+        JButton btnAlquilar = crearBotonAzul("Alquilar Coche");
+        btnAlquilar.addActionListener(e -> alquilarCoche());
 
-        JButton btnDetalle = crearBoton("Ver Detalle");
-        btnDetalle.setBounds(600, 320, 200, 40);
-        panelFondo.add(btnDetalle);
+        JButton btnDetalle = crearBotonAzul("Ver Detalle");
+        btnDetalle.addActionListener(e -> verDetalle());
+
+        panelBotones.add(btnVolver);
+        panelBotones.add(Box.createHorizontalStrut(20));
+        panelBotones.add(btnAlquilar);
+        panelBotones.add(Box.createHorizontalStrut(20));
+        panelBotones.add(btnDetalle);
+
+        panelCentro.add(panelBotones);
     }
 
-    private JButton crearBoton(String texto) {
+    private void cargarCoches() {
+        modelo.setRowCount(0);
+        CocheDAO dao = new CocheDAO();
+        List<Coche> coches = dao.listarCoches();
+
+        for (Coche c : coches) {
+            if (c.isDisponible()) {
+                modelo.addRow(new Object[]{
+                        c.getId(), c.getMarca(), c.getModelo(), c.getAnio(), c.getPrecio(), c.getCaballos(), "Sí"
+                });
+            }
+        }
+    }
+
+    private void alquilarCoche() {
+        int fila = tabla.getSelectedRow();
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Selecciona un coche para alquilar", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int idCoche = Integer.parseInt(modelo.getValueAt(fila, 0).toString());
+        double precio = Double.parseDouble(modelo.getValueAt(fila, 4).toString());
+
+        String diasStr = JOptionPane.showInputDialog(this, "¿Cuántos días deseas alquilar el coche?", "Días", JOptionPane.QUESTION_MESSAGE);
+        if (diasStr == null || diasStr.trim().isEmpty()) return;
+
+        try {
+            int dias = Integer.parseInt(diasStr.trim());
+            if (dias <= 0) throw new NumberFormatException();
+
+            LocalDate inicio = LocalDate.now();
+            LocalDate fin = inicio.plusDays(dias);
+            double total = dias * precio;
+
+            Alquiler alquiler = new Alquiler();
+            alquiler.setIdCliente(cliente.getId());
+            alquiler.setIdCoche(idCoche);
+            alquiler.setFechaInicio(inicio.toString());
+            alquiler.setFechaFin(fin.toString());
+            alquiler.setTotal(total);
+
+            boolean ok = new AlquilerDAO().crearAlquiler(alquiler);
+            if (ok) {
+                new CocheDAO().marcarComoNoDisponible(idCoche);
+                JOptionPane.showMessageDialog(this, "Coche alquilado correctamente.");
+                cargarCoches();
+            } else {
+                JOptionPane.showMessageDialog(this, "Error al registrar alquiler.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Número de días inválido", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    private void verDetalle() {
+        int fila = tabla.getSelectedRow();
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Selecciona un coche para ver el detalle", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int idCoche = Integer.parseInt(modelo.getValueAt(fila, 0).toString());
+        Coche coche = new CocheDAO().listarCoches().stream()
+                .filter(c -> c.getId() == idCoche)
+                .findFirst().orElse(null);
+
+        if (coche != null) {
+            new DetalleCocheView(coche, cliente).setVisible(true);
+            dispose();
+        }
+    }
+
+    private JButton crearBotonAzul(String texto) {
         JButton btn = new JButton(texto);
-        btn.setBackground(new Color(30, 40, 60));
+        btn.setFont(new Font("SansSerif", Font.BOLD, 15));
+        btn.setBackground(new Color(30, 40, 70));
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
-        btn.setFont(new Font("SansSerif", Font.BOLD, 15));
-        btn.setBorder(BorderFactory.createEmptyBorder());
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-        btn.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) {
-                btn.setBackground(new Color(50, 60, 80));
+        btn.setPreferredSize(new Dimension(160, 40));
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btn.setBackground(new Color(50, 60, 100));
             }
 
-            public void mouseExited(MouseEvent e) {
-                btn.setBackground(new Color(30, 40, 60));
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btn.setBackground(new Color(30, 40, 70));
             }
         });
-
         return btn;
     }
 
-    private JButton crearBotonVentana(String texto, Color color) {
+    private JButton crearBotonVentana(String texto, Color fondo) {
         JButton btn = new JButton(texto);
         btn.setFocusPainted(false);
         btn.setFont(new Font("SansSerif", Font.BOLD, 12));
         btn.setForeground(Color.WHITE);
-        btn.setBackground(color);
+        btn.setBackground(fondo);
         btn.setBorder(null);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return btn;
