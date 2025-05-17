@@ -144,4 +144,21 @@ public class AlquilerDAO {
 
         return lista;
     }
+    
+    public boolean eliminarAlquilerPorCocheYCliente(int idCoche, int idCliente) {
+        String sql = "DELETE FROM alquileres WHERE id_coche = ? AND id_cliente = ?";
+
+        try (Connection conn = Conexion.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idCoche);
+            stmt.setInt(2, idCliente);
+            return stmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error al eliminar alquiler por coche y cliente: " + e.getMessage());
+            return false;
+        }
+    }
+
 }

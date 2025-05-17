@@ -17,6 +17,7 @@ public class CochesView extends JFrame {
     private final Cliente cliente;
     private JTable tabla;
     private DefaultTableModel modelo;
+    private Image fondoEscalado;
 
     public CochesView(Cliente cliente) {
         this.cliente = cliente;
@@ -27,16 +28,23 @@ public class CochesView extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+        // Fondo optimizado
         JPanel backgroundPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                ImageIcon icon = new ImageIcon(getClass().getResource("/utils/image/fondo_alquiler.jpg"));
-                if (icon.getImage() != null) {
-                    Image scaled = icon.getImage().getScaledInstance(getWidth(), getHeight(), Image.SCALE_SMOOTH);
-                    g.drawImage(scaled, 0, 0, this);
+                if (fondoEscalado == null) {
+                    try {
+                        ImageIcon icon = new ImageIcon(getClass().getResource("/utils/image/fondo_alquiler.jpg"));
+                        fondoEscalado = icon.getImage().getScaledInstance(1000, 600, Image.SCALE_SMOOTH);
+                    } catch (Exception e) {
+                        System.err.println("Error al cargar fondo: " + e.getMessage());
+                    }
+                }
+                if (fondoEscalado != null) {
+                    g.drawImage(fondoEscalado, 0, 0, this);
                     Graphics2D g2d = (Graphics2D) g.create();
-                    g2d.setColor(new Color(0, 0, 0, 150)); // Atenuar
+                    g2d.setColor(new Color(0, 0, 0, 150));
                     g2d.fillRect(0, 0, getWidth(), getHeight());
                     g2d.dispose();
                 }

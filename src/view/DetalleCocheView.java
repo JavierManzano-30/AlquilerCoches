@@ -66,9 +66,9 @@ public class DetalleCocheView extends JFrame {
 
         JLabel lblImagen = new JLabel();
         try {
-            String ruta = "/utils/image/detalle" + coche.getMarca().toLowerCase() + "_detalle.jpg";
+            String ruta = "/utils/image/detalle/" + coche.getMarca().toLowerCase() + "_detalle.jpg";
             ImageIcon icon = new ImageIcon(getClass().getResource(ruta));
-            Image scaled = icon.getImage().getScaledInstance(700, 300, Image.SCALE_SMOOTH);
+            Image scaled = icon.getImage().getScaledInstance(400, 200, Image.SCALE_SMOOTH);
             lblImagen.setIcon(new ImageIcon(scaled));
         } catch (Exception e) {
             lblImagen.setText("[Imagen no disponible]");
@@ -84,9 +84,11 @@ public class DetalleCocheView extends JFrame {
         btnImagen.setForeground(Color.WHITE);
         btnImagen.addActionListener(ev -> {
             try {
-                String ruta = "/utils/image" + coche.getMarca().toLowerCase() + "_detalle.jpg";
-                ImageIcon original = new ImageIcon(getClass().getResource(ruta));
-                JLabel label = new JLabel(original);
+                String ruta2 = "/utils/image/" + coche.getMarca().toLowerCase() + "_detalle.jpg";
+                ImageIcon original = new ImageIcon(getClass().getResource(ruta2));
+                Image imgOriginal = original.getImage();
+                Image imgEscalada = imgOriginal.getScaledInstance(1440, 768, Image.SCALE_SMOOTH);
+                JLabel label = new JLabel(new ImageIcon(imgEscalada));
                 JFrame viewer = new JFrame("Imagen completa");
                 viewer.getContentPane().add(new JScrollPane(label));
                 viewer.pack();

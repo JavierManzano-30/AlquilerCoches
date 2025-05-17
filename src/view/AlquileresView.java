@@ -1,6 +1,7 @@
 package view;
 
 import dao.AlquilerDAO;
+import dao.CocheDAO;
 import model.Cliente;
 import model.DetalleAlquiler;
 import utils.FileManager;
@@ -12,53 +13,92 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 
-/**
- * Vista para que el cliente visualice sus alquileres y genere factura.
- */
-public class AlquileresView extends BaseView {
+public class AlquileresView extends JFrame {
 
     private JTable tableAlquileres;
     private Cliente cliente;
     private List<DetalleAlquiler> detalles;
 
     public AlquileresView(Cliente cliente) {
-        super("Mis Alquileres", 600, 400);
         this.cliente = cliente;
-    }
 
-    @Override
-    protected void inicializarComponentes() {
-        panelPrincipal.setLayout(null);
+        setTitle("Mis Alquileres");
+        setSize(1000, 600);
+        setUndecorated(true);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        JLabel lblTitulo = new JLabel("Alquileres de " + cliente.getNombre());
-        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        lblTitulo.setBounds(180, 10, 300, 30);
-        panelPrincipal.add(lblTitulo);
+        JPanel contenedor = new JPanel(new BorderLayout());
+        contenedor.setBorder(BorderFactory.createLineBorder(Color.DARK_GRAY, 2));
+        setContentPane(contenedor);
 
-        JScrollPane scrollPane = new JScrollPane();
-        scrollPane.setBounds(30, 50, 530, 200);
-        panelPrincipal.add(scrollPane);
+        // Barra superior
+        JPanel barra = new JPanel(null);
+        barra.setPreferredSize(new Dimension(1000, 40));
+        barra.setBackground(Color.WHITE);
+        contenedor.add(barra, BorderLayout.NORTH);
+
+        JLabel lblUsuario = new JLabel("👤 " + cliente.getNombre());
+        lblUsuario.setBounds(10, 10, 200, 20);
+        lblUsuario.setFont(new Font("Monospaced", Font.BOLD, 13));
+        barra.add(lblUsuario);
+
+        JButton btnMin = crearBotonVentana("—", new Color(166, 203, 226));
+        btnMin.setBounds(920, 7, 30, 25);
+        btnMin.addActionListener(e -> setState(ICONIFIED));
+        barra.add(btnMin);
+
+        JButton btnCerrar = crearBotonVentana("X", new Color(230, 105, 120));
+        btnCerrar.setBounds(960, 7, 30, 25);
+        btnCerrar.addActionListener(e -> System.exit(0));
+        barra.add(btnCerrar);
+
+        // Tabla
+        JPanel panelCentro = new JPanel();
+        panelCentro.setOpaque(false);
+        panelCentro.setLayout(new BoxLayout(panelCentro, BoxLayout.Y_AXIS));
+        contenedor.add(panelCentro, BorderLayout.CENTER);
+
+        JLabel lblTitulo = new JLabel("Tus Alquileres");
+        lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 26));
+        lblTitulo.setAlignmentX(Component.CENTER_ALIGNMENT);
+        lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        panelCentro.add(lblTitulo);
 
         tableAlquileres = new JTable();
-        scrollPane.setViewportView(tableAlquileres);
+        JScrollPane scroll = new JScrollPane(tableAlquileres);
+        scroll.setMaximumSize(new Dimension(900, 200));
+        panelCentro.add(scroll);
 
-        JButton btnVolver = new JButton("Volver");
-        btnVolver.setBounds(30, 270, 100, 25);
-        panelPrincipal.add(btnVolver);
+        // Botones
+        JPanel panelBotones = new JPanel();
+        panelBotones.setOpaque(false);
+        panelBotones.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
+
+        JButton btnVolver = crearBotonAzul("Volver");
         btnVolver.addActionListener(e -> {
             new PrincipalView(cliente).setVisible(true);
             dispose();
         });
 
-        JButton btnFactura = new JButton("Generar Factura");
-        btnFactura.setBounds(150, 270, 150, 25);
-        panelPrincipal.add(btnFactura);
+        JButton btnFactura = crearBotonAzul("Generar Factura");
         btnFactura.addActionListener(e -> generarFactura());
 
-        JButton btnVerFactura = new JButton("Ver Factura TXT");
-        btnVerFactura.setBounds(320, 270, 150, 25);
-        panelPrincipal.add(btnVerFactura);
-        btnVerFactura.addActionListener(e -> verFactura());
+        JButton btnVer = crearBotonAzul("Ver Factura");
+        btnVer.addActionListener(e -> verFactura());
+
+        JButton btnCancelar = crearBotonAzul("Cancelar Reserva");
+        btnCancelar.addActionListener(e -> cancelarReserva());
+
+        panelBotones.add(btnVolver);
+        panelBotones.add(Box.createHorizontalStrut(10));
+        panelBotones.add(btnFactura);
+        panelBotones.add(Box.createHorizontalStrut(10));
+        panelBotones.add(btnVer);
+        panelBotones.add(Box.createHorizontalStrut(10));
+        panelBotones.add(btnCancelar);
+
+        panelCentro.add(panelBotones);
 
         cargarAlquileres();
     }
@@ -66,7 +106,7 @@ public class AlquileresView extends BaseView {
     private void cargarAlquileres() {
         DefaultTableModel model = new DefaultTableModel();
         model.setColumnIdentifiers(new String[]{
-                "Marca", "Modelo", "Año", "Días", "Precio/Día", "Total (€)"
+            "Marca", "Modelo", "Año", "Días", "Precio/Día", "Total (€)"
         });
 
         AlquilerDAO dao = new AlquilerDAO();
@@ -74,16 +114,40 @@ public class AlquileresView extends BaseView {
 
         for (DetalleAlquiler detalle : detalles) {
             model.addRow(new Object[]{
-                    detalle.getCoche().getMarca(),
-                    detalle.getCoche().getModelo(),
-                    detalle.getCoche().getAnio(),
-                    detalle.getDias(),
-                    detalle.getCoche().getPrecio(),
-                    detalle.getTotal()
+                detalle.getCoche().getMarca(),
+                detalle.getCoche().getModelo(),
+                detalle.getCoche().getAnio(),
+                detalle.getDias(),
+                detalle.getCoche().getPrecio(),
+                detalle.getTotal()
             });
         }
 
         tableAlquileres.setModel(model);
+    }
+
+    private void cancelarReserva() {
+        int fila = tableAlquileres.getSelectedRow();
+        if (fila == -1) {
+            JOptionPane.showMessageDialog(this, "Selecciona un alquiler para cancelar.");
+            return;
+        }
+
+        DetalleAlquiler detalle = detalles.get(fila);
+        int cocheId = detalle.getCoche().getId();
+
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Estás seguro que deseas cancelar la reserva?", "Confirmar", JOptionPane.YES_NO_OPTION);
+        if (confirm != JOptionPane.YES_OPTION) return;
+
+        boolean eliminado = new AlquilerDAO().eliminarAlquilerPorCocheYCliente(cocheId, cliente.getId());
+        boolean disponible = new CocheDAO().marcarComoDisponible(cocheId);
+
+        if (eliminado && disponible) {
+            JOptionPane.showMessageDialog(this, "Reserva cancelada correctamente.");
+            cargarAlquileres();
+        } else {
+            JOptionPane.showMessageDialog(this, "No se pudo cancelar la reserva.");
+        }
     }
 
     private void generarFactura() {
@@ -120,8 +184,39 @@ public class AlquileresView extends BaseView {
         }
     }
 
+    private JButton crearBotonAzul(String texto) {
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font("SansSerif", Font.BOLD, 15));
+        btn.setBackground(new Color(30, 40, 70));
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        btn.setPreferredSize(new Dimension(160, 40));
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btn.setBackground(new Color(50, 60, 100));
+            }
+
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btn.setBackground(new Color(30, 40, 70));
+            }
+        });
+        return btn;
+    }
+
+    private JButton crearBotonVentana(String texto, Color fondo) {
+        JButton btn = new JButton(texto);
+        btn.setFocusPainted(false);
+        btn.setFont(new Font("SansSerif", Font.BOLD, 12));
+        btn.setForeground(Color.WHITE);
+        btn.setBackground(fondo);
+        btn.setBorder(null);
+        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        return btn;
+    }
+
     public static void main(String[] args) {
         Cliente clienteMock = new Cliente(1, "Ana", "López", "ana@email.com", "000000000", "abc123");
-        SwingUtilities.invokeLater(() -> new AlquileresView(clienteMock).mostrar());
+        SwingUtilities.invokeLater(() -> new AlquileresView(clienteMock).setVisible(true));
     }
 }
