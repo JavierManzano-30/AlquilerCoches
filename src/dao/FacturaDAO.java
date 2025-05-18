@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import model.Factura;
-import utils.Conexion;
+import controller.ConexionBD;
 
 /**
  * DAO para gestionar operaciones CRUD sobre la entidad Factura.
@@ -18,7 +18,7 @@ public class FacturaDAO {
     public boolean crearFactura(Factura factura) {
         String sql = "INSERT INTO facturas (id_alquiler, fecha_emision, total) VALUES (?, ?, ?)";
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, factura.getIdAlquiler());
@@ -40,7 +40,7 @@ public class FacturaDAO {
     public Factura buscarPorId(int id) {
         String sql = "SELECT * FROM facturas WHERE id = ?";
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, id);
@@ -69,7 +69,7 @@ public class FacturaDAO {
         List<Factura> facturas = new ArrayList<>();
         String sql = "SELECT * FROM facturas";
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
@@ -96,7 +96,7 @@ public class FacturaDAO {
     public boolean eliminarFactura(int id) {
         String sql = "DELETE FROM facturas WHERE id = ?";
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, id);

@@ -4,6 +4,7 @@ import dao.ClienteDAO;
 import dao.UsuarioDAO;
 import model.Cliente;
 import model.Usuario;
+import utils.Validador;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,6 +17,7 @@ public class RegistroView extends JFrame {
     private JTextField txtApellido;
     private JTextField txtEmail;
     private JTextField txtTelefono;
+    private JTextField txtDni;
     private JPasswordField txtPassword;
     private JLabel lblError;
 
@@ -77,6 +79,7 @@ public class RegistroView extends JFrame {
         txtApellido = agregarCampo(panelForm, "Apellido:", y += spacing);
         txtEmail = agregarCampo(panelForm, "Email:", y += spacing);
         txtTelefono = agregarCampo(panelForm, "Teléfono:", y += spacing);
+        txtDni = agregarCampo(panelForm, "DNI:", y += spacing); // NUEVO CAMPO
         txtPassword = new JPasswordField();
         agregarLabel(panelForm, "Contraseña:", y += spacing);
         txtPassword.setBounds(30, y + 20, 240, 25);
@@ -85,21 +88,21 @@ public class RegistroView extends JFrame {
         panelForm.add(txtPassword);
 
         JButton btnRegistrar = new JButton("REGISTRAR");
-        btnRegistrar.setBounds(30, 380, 110, 30);
+        btnRegistrar.setBounds(30, 420, 110, 30); // BAJADO
         btnRegistrar.setBackground(new Color(76, 175, 80));
         btnRegistrar.setForeground(Color.WHITE);
         btnRegistrar.setFocusPainted(false);
         panelForm.add(btnRegistrar);
 
         JButton btnVolver = new JButton("VOLVER");
-        btnVolver.setBounds(160, 380, 110, 30);
+        btnVolver.setBounds(160, 420, 110, 30); // BAJADO
         btnVolver.setBackground(new Color(121, 134, 203));
         btnVolver.setForeground(Color.WHITE);
         btnVolver.setFocusPainted(false);
         panelForm.add(btnVolver);
 
         lblError = new JLabel("");
-        lblError.setBounds(30, 430, 250, 25);
+        lblError.setBounds(30, 460, 250, 25); // BAJADO
         lblError.setForeground(Color.RED);
         lblError.setFont(new Font("SansSerif", Font.PLAIN, 11));
         panelForm.add(lblError);
@@ -157,10 +160,42 @@ public class RegistroView extends JFrame {
         String apellido = txtApellido.getText().trim();
         String email = txtEmail.getText().trim();
         String telefono = txtTelefono.getText().trim();
+        String dni = txtDni.getText().trim();
         String password = new String(txtPassword.getPassword()).trim();
 
-        if (nombre.isEmpty() || apellido.isEmpty() || email.isEmpty() || password.isEmpty()) {
+        if (nombre.isEmpty() || apellido.isEmpty() || email.isEmpty()
+                || telefono.isEmpty() || dni.isEmpty() || password.isEmpty()) {
             lblError.setText("Completa todos los campos.");
+            return;
+        }
+
+        if (!Validador.esNombreValido(nombre)) {
+            lblError.setText("El nombre solo debe contener letras.");
+            return;
+        }
+
+        if (!Validador.esApellidoValido(apellido)) {
+            lblError.setText("El apellido solo debe contener letras.");
+            return;
+        }
+
+        if (!Validador.esEmailValido(email)) {
+            lblError.setText("Introduce un correo electrónico válido.");
+            return;
+        }
+
+        if (!Validador.esTelefonoValido(telefono)) {
+            lblError.setText("El teléfono debe tener entre 9 y 15 dígitos.");
+            return;
+        }
+
+        if (!Validador.esDniValido(dni)) {
+            lblError.setText("DNI inválido. Revisa el formato y letra.");
+            return;
+        }
+
+        if (!Validador.esPasswordValida(password)) {
+            lblError.setText("La contraseña debe tener al menos 6 caracteres.");
             return;
         }
 
@@ -171,7 +206,7 @@ public class RegistroView extends JFrame {
         }
 
         Usuario usuario = new Usuario(email, password, "cliente");
-        Cliente cliente = new Cliente(0, nombre, apellido, email, telefono, password);
+        Cliente cliente = new Cliente(0, nombre, apellido, email, telefono, dni, password);
 
         boolean okUser = usuarioDAO.registrarUsuario(usuario);
         boolean okCliente = new ClienteDAO().registrarCliente(cliente);

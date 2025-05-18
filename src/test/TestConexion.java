@@ -1,7 +1,7 @@
 package test;
 
 import java.sql.Connection;
-import utils.Conexion;
+import controller.ConexionBD;
 
 /**
  * Clase de prueba para verificar que la conexión a la base de datos es correcta.
@@ -9,7 +9,7 @@ import utils.Conexion;
 public class TestConexion {
 
     public static void main(String[] args) {
-        try (Connection conn = Conexion.getConexion()) {
+        try (Connection conn = ConexionBD.getConexion()) {
             if (conn != null && !conn.isClosed()) {
                 System.out.println("✅ Conexión exitosa a la base de datos.");
             } else {

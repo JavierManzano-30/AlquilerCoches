@@ -14,6 +14,8 @@ public class Coche {
     private boolean disponible;
     private int caballos;
     private int cilindrada;
+    private String transmision;
+
 
     /**
      * Constructor vacío requerido por algunos frameworks y DAOs.
@@ -44,7 +46,7 @@ public class Coche {
     /**
      * Constructor completo con todos los atributos.
      */
-    public Coche(int id, String marca, String modelo, int anio, double precio, boolean disponible, int caballos, int cilindrada) {
+    public Coche(int id, String marca, String modelo, int anio, double precio, boolean disponible, int caballos, int cilindrada, String transmision) {
         this.id = id;
         this.marca = marca;
         this.modelo = modelo;
@@ -53,6 +55,7 @@ public class Coche {
         this.disponible = disponible;
         this.caballos = caballos;
         this.cilindrada = cilindrada;
+        this.transmision = transmision;
     }
 
     // Getters
@@ -64,6 +67,7 @@ public class Coche {
     public boolean isDisponible() { return disponible; }
     public int getCaballos() { return caballos; }
     public int getCilindrada() { return cilindrada; }
+    public String getTransmision() { return transmision; }
 
     // Setters
     public void setId(int id) { this.id = id; }
@@ -74,10 +78,14 @@ public class Coche {
     public void setDisponible(boolean disponible) { this.disponible = disponible; }
     public void setCaballos(int caballos) { this.caballos = caballos; }
     public void setCilindrada(int cilindrada) { this.cilindrada = cilindrada; }
+    public void setTransmision(String transmision) { this.transmision = transmision; }
 
     @Override
     public String toString() {
-        return String.format("Coche{id=%d, marca='%s', modelo='%s', año=%d, precio=%.2f, disponible=%s, caballos=%d, cilindrada=%dcc}",
-                id, marca, modelo, anio, precio, disponible ? "Sí" : "No", caballos, cilindrada);
+        return String.format(
+            "Coche{id=%d, marca='%s', modelo='%s', año=%d, precio=%.2f, disponible=%s, caballos=%d, cilindrada=%dcc, transmision=%s}",
+            id, marca, modelo, anio, precio, disponible ? "Sí" : "No", caballos, cilindrada, transmision
+        );
     }
+
 }

@@ -157,15 +157,15 @@ public class CochesView extends JFrame {
             if (dias <= 0) throw new NumberFormatException();
 
             LocalDate inicio = LocalDate.now();
-            LocalDate fin = inicio.plusDays(dias);
             double total = dias * precio;
 
-            Alquiler alquiler = new Alquiler();
-            alquiler.setIdCliente(cliente.getId());
-            alquiler.setIdCoche(idCoche);
-            alquiler.setFechaInicio(inicio.toString());
-            alquiler.setFechaFin(fin.toString());
-            alquiler.setTotal(total);
+            Alquiler alquiler = new Alquiler(
+                cliente.getId(),
+                idCoche,
+                inicio.toString(),
+                dias,
+                total
+            );
 
             boolean ok = new AlquilerDAO().crearAlquiler(alquiler);
             if (ok) {
@@ -179,6 +179,7 @@ public class CochesView extends JFrame {
             JOptionPane.showMessageDialog(this, "Número de días inválido", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 
     private void verDetalle() {
         int fila = tabla.getSelectedRow();
@@ -227,10 +228,5 @@ public class CochesView extends JFrame {
         btn.setBorder(null);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return btn;
-    }
-
-    public static void main(String[] args) {
-        Cliente clienteMock = new Cliente(1, "Mario", "Rossi", "mario@email.com", "123456789", "secreta");
-        SwingUtilities.invokeLater(() -> new CochesView(clienteMock).setVisible(true));
     }
 }

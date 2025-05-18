@@ -2,17 +2,18 @@
      🚗 JAPANESE SPORTS CAR RENTAL - FACTURA 🚗     
 ====================================================
 
-Cliente : Javier Manzano
-Email   : javier@gmail.com
-Teléfono: 666666663
-Fecha   : 17/05/2025
+Cliente : Victor Ridao
+Email   : victor@gmail.com
+Teléfono: 652660274
+Fecha   : 18/05/2025
 
 ----------------------------------------------------
 ID     Marca        Modelo       Días  Total (€) 
 ----------------------------------------------------
-2      Mazda        RX-7         4     280,00    
+3      Nissan       Skyline      4     360,00    
+2      Mazda        RX-7         8     560,00    
 ----------------------------------------------------
-TOTAL A PAGAR:                           280,00 €
+TOTAL A PAGAR:                           920,00 €
 ====================================================
 Gracias por confiar en nosotros. ¡Conduce con pasión!
 ====================================================

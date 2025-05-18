@@ -11,17 +11,19 @@ public class Cliente {
     private String apellido;
     private String email;
     private String telefono;
+    private String dni;
     private String password;
 
     /**
      * Constructor completo para instanciar un cliente existente (por ejemplo, desde base de datos).
      */
-    public Cliente(int id, String nombre, String apellido, String email, String telefono, String password) {
+    public Cliente(int id, String nombre, String apellido, String email, String telefono, String dni, String password) {
         this.id = id;
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
         this.telefono = telefono;
+        this.dni = dni;
         this.password = password;
     }
 
@@ -51,6 +53,10 @@ public class Cliente {
         this.telefono = telefono;
     }
 
+    public void setDni(String dni) {
+        this.dni = dni;
+    }
+
     public void setPassword(String password) {
         this.password = password;
     }
@@ -76,13 +82,17 @@ public class Cliente {
         return telefono;
     }
 
+    public String getDni() {
+        return dni;
+    }
+
     public String getPassword() {
         return password;
     }
 
     @Override
     public String toString() {
-        return String.format("Cliente[id=%d, nombre=%s %s, email=%s, tel=%s]",
-                id, nombre, apellido, email, telefono);
+        return String.format("Cliente[id=%d, nombre=%s %s, email=%s, tel=%s, dni=%s]",
+                id, nombre, apellido, email, telefono, dni);
     }
 }

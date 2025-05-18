@@ -91,11 +91,11 @@ public class AlquileresView extends JFrame {
         btnCancelar.addActionListener(e -> cancelarReserva());
 
         panelBotones.add(btnVolver);
-        panelBotones.add(Box.createHorizontalStrut(10));
+        panelBotones.add(Box.createHorizontalStrut(15));
         panelBotones.add(btnFactura);
-        panelBotones.add(Box.createHorizontalStrut(10));
+        panelBotones.add(Box.createHorizontalStrut(15));
         panelBotones.add(btnVer);
-        panelBotones.add(Box.createHorizontalStrut(10));
+        panelBotones.add(Box.createHorizontalStrut(15));
         panelBotones.add(btnCancelar);
 
         panelCentro.add(panelBotones);
@@ -156,17 +156,27 @@ public class AlquileresView extends JFrame {
             return;
         }
 
-        Path archivo = Path.of("factura_" + cliente.getId() + ".txt");
         try {
+            Path carpetaFacturas = Path.of("facturas");
+            if (!Files.exists(carpetaFacturas)) {
+                Files.createDirectories(carpetaFacturas);
+            }
+
+            String nombreArchivo = "factura_" + cliente.getId() + "_" + cliente.getNombre().replaceAll("\\s+", "") + ".txt";
+            Path archivo = carpetaFacturas.resolve(nombreArchivo);
+
             FileManager.generarFacturaTxt(cliente, detalles, archivo);
-            JOptionPane.showMessageDialog(this, "Factura generada: " + archivo.toAbsolutePath());
+            JOptionPane.showMessageDialog(this, "Factura generada en: " + archivo.toAbsolutePath());
+
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Error al generar factura.");
+            JOptionPane.showMessageDialog(this, "Error al generar la factura: " + e.getMessage());
         }
     }
 
     private void verFactura() {
-        Path archivo = Path.of("factura_" + cliente.getId() + ".txt");
+        String nombreArchivo = "factura_" + cliente.getId() + "_" + cliente.getNombre().replaceAll("\\s+", "") + ".txt";
+        Path archivo = Path.of("facturas").resolve(nombreArchivo);
+
         if (!Files.exists(archivo)) {
             JOptionPane.showMessageDialog(this, "No se ha generado ninguna factura.");
             return;
@@ -191,7 +201,7 @@ public class AlquileresView extends JFrame {
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(160, 40));
+        btn.setPreferredSize(new Dimension(180, 40)); // ancho aumentado
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 btn.setBackground(new Color(50, 60, 100));
@@ -213,10 +223,5 @@ public class AlquileresView extends JFrame {
         btn.setBorder(null);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return btn;
-    }
-
-    public static void main(String[] args) {
-        Cliente clienteMock = new Cliente(1, "Ana", "López", "ana@email.com", "000000000", "abc123");
-        SwingUtilities.invokeLater(() -> new AlquileresView(clienteMock).setVisible(true));
     }
 }

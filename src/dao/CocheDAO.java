@@ -5,15 +5,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 import model.Coche;
-import utils.Conexion;
+import controller.ConexionBD;
 
 public class CocheDAO {
 
     public List<Coche> listarCoches() {
         List<Coche> coches = new ArrayList<>();
-        String sql = "SELECT * FROM coches";
+        String sql = """
+            SELECT 
+                c.id,
+                ma.nombre AS marca,
+                mo.nombre AS modelo,
+                c.anio,
+                c.precio_dia,
+                c.disponible,
+                c.caballos,
+                c.cilindrada,
+                c.transmision
+            FROM coches c
+            JOIN modelo mo ON c.id_modelo = mo.id
+            JOIN marca ma ON mo.id_marca = ma.id
+        """;
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
@@ -23,10 +37,11 @@ public class CocheDAO {
                     rs.getString("marca"),
                     rs.getString("modelo"),
                     rs.getInt("anio"),
-                    rs.getDouble("precio"),
+                    rs.getDouble("precio_dia"),
                     rs.getBoolean("disponible"),
                     rs.getInt("caballos"),
-                    rs.getInt("cilindrada")
+                    rs.getInt("cilindrada"),
+                    rs.getString("transmision") // NUEVO CAMPO
                 );
                 coches.add(coche);
             }
@@ -40,7 +55,7 @@ public class CocheDAO {
 
     public boolean marcarComoNoDisponible(int idCoche) {
         String sql = "UPDATE coches SET disponible = false WHERE id = ?";
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idCoche);
             return stmt.executeUpdate() > 0;
@@ -52,7 +67,7 @@ public class CocheDAO {
 
     public boolean marcarComoDisponible(int idCoche) {
         String sql = "UPDATE coches SET disponible = true WHERE id = ?";
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, idCoche);
             return stmt.executeUpdate() > 0;

@@ -7,7 +7,7 @@ import java.util.List;
 import model.Alquiler;
 import model.Coche;
 import model.DetalleAlquiler;
-import utils.Conexion;
+import controller.ConexionBD;
 
 /**
  * DAO para gestionar operaciones sobre la entidad Alquiler.
@@ -15,15 +15,15 @@ import utils.Conexion;
 public class AlquilerDAO {
 
     public boolean crearAlquiler(Alquiler alquiler) {
-        String sql = "INSERT INTO alquileres (id_cliente, id_coche, fecha_inicio, fecha_fin, total) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO alquileres (id_cliente, id_coche, fecha_inicio, dias, total) VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, alquiler.getIdCliente());
             stmt.setInt(2, alquiler.getIdCoche());
             stmt.setString(3, alquiler.getFechaInicio());
-            stmt.setString(4, alquiler.getFechaFin());
+            stmt.setInt(4, alquiler.getDias());
             stmt.setDouble(5, alquiler.getTotal());
 
             stmt.executeUpdate();
@@ -39,7 +39,7 @@ public class AlquilerDAO {
         List<Alquiler> lista = new ArrayList<>();
         String sql = "SELECT * FROM alquileres";
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
@@ -49,7 +49,7 @@ public class AlquilerDAO {
                     rs.getInt("id_cliente"),
                     rs.getInt("id_coche"),
                     rs.getString("fecha_inicio"),
-                    rs.getString("fecha_fin"),
+                    rs.getInt("dias"),
                     rs.getDouble("total")
                 );
                 lista.add(alquiler);
@@ -65,7 +65,7 @@ public class AlquilerDAO {
     public Alquiler buscarPorId(int id) {
         String sql = "SELECT * FROM alquileres WHERE id = ?";
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, id);
@@ -76,7 +76,7 @@ public class AlquilerDAO {
                         rs.getInt("id_cliente"),
                         rs.getInt("id_coche"),
                         rs.getString("fecha_inicio"),
-                        rs.getString("fecha_fin"),
+                        rs.getInt("dias"),
                         rs.getDouble("total")
                     );
                 }
@@ -92,7 +92,7 @@ public class AlquilerDAO {
     public boolean eliminarAlquiler(int id) {
         String sql = "DELETE FROM alquileres WHERE id = ?";
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, id);
@@ -106,16 +106,20 @@ public class AlquilerDAO {
 
     public List<DetalleAlquiler> detallesCliente(int idCliente) {
         String sql = """
-            SELECT c.id, c.marca, c.modelo, c.anio, c.precio, c.caballos, c.cilindrada,
-                   a.fecha_inicio, a.fecha_fin, a.total, DATEDIFF(a.fecha_fin, a.fecha_inicio) AS dias
+            SELECT 
+                c.id, ma.nombre AS marca, mo.nombre AS modelo, 
+                c.anio, c.precio_dia, c.caballos, c.cilindrada, c.transmision,
+                a.fecha_inicio, a.dias, a.total
             FROM alquileres a
             JOIN coches c ON a.id_coche = c.id
+            JOIN modelo mo ON c.id_modelo = mo.id
+            JOIN marca ma ON mo.id_marca = ma.id
             WHERE a.id_cliente = ?
         """;
 
         List<DetalleAlquiler> lista = new ArrayList<>();
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, idCliente);
@@ -126,10 +130,11 @@ public class AlquilerDAO {
                         rs.getString("marca"),
                         rs.getString("modelo"),
                         rs.getInt("anio"),
-                        rs.getDouble("precio"),
+                        rs.getDouble("precio_dia"),
                         true, // disponible no aplica aquí
                         rs.getInt("caballos"),
-                        rs.getInt("cilindrada")
+                        rs.getInt("cilindrada"),
+                        rs.getString("transmision") // NUEVO CAMPO
                     );
                     int dias = rs.getInt("dias");
                     double total = rs.getDouble("total");
@@ -144,11 +149,11 @@ public class AlquilerDAO {
 
         return lista;
     }
-    
+
     public boolean eliminarAlquilerPorCocheYCliente(int idCoche, int idCliente) {
         String sql = "DELETE FROM alquileres WHERE id_coche = ? AND id_cliente = ?";
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, idCoche);
@@ -160,5 +165,4 @@ public class AlquilerDAO {
             return false;
         }
     }
-
 }

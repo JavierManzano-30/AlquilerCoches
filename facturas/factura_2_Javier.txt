@@ -2,17 +2,18 @@
      🚗 JAPANESE SPORTS CAR RENTAL - FACTURA 🚗     
 ====================================================
 
-Cliente : Ana López
-Email   : ana@email.com
-Teléfono: 000000000
-Fecha   : 17/05/2025
+Cliente : Javier Manzano
+Email   : javier@gmail.com
+Teléfono: 640959215
+Fecha   : 18/05/2025
 
 ----------------------------------------------------
 ID     Marca        Modelo       Días  Total (€) 
 ----------------------------------------------------
-1      Toyota       Corolla      5     200,00    
+4      Honda        NSX          3     225,00    
+2      Mazda        RX-7         1     70,00     
 ----------------------------------------------------
-TOTAL A PAGAR:                           200,00 €
+TOTAL A PAGAR:                           295,00 €
 ====================================================
 Gracias por confiar en nosotros. ¡Conduce con pasión!
 ====================================================

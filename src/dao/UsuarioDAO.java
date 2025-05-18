@@ -1,7 +1,7 @@
 package dao;
 
 import model.Usuario;
-import utils.Conexion;
+import controller.ConexionBD;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -21,7 +21,7 @@ public class UsuarioDAO {
     public boolean registrarUsuario(Usuario usuario) {
         String sql = "INSERT INTO usuarios (username, password, rol) VALUES (?, ?, ?)";
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, usuario.getUsername());
@@ -47,7 +47,7 @@ public class UsuarioDAO {
     public Usuario login(String username, String password) {
         String sql = "SELECT * FROM usuarios WHERE username = ? AND password = ?";
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, username);
@@ -80,7 +80,7 @@ public class UsuarioDAO {
     public boolean existeUsuario(String username) {
         String sql = "SELECT 1 FROM usuarios WHERE username = ?";
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, username);
@@ -103,7 +103,7 @@ public class UsuarioDAO {
         List<Usuario> usuarios = new ArrayList<>();
         String sql = "SELECT * FROM usuarios";
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
@@ -132,7 +132,7 @@ public class UsuarioDAO {
     public boolean eliminarUsuario(int id) {
         String sql = "DELETE FROM usuarios WHERE id = ?";
 
-        try (Connection conn = Conexion.getConexion();
+        try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, id);

@@ -137,9 +137,4 @@ public class PrincipalView extends JFrame {
         btn.setFocusPainted(false);
         return btn;
     }
-
-    public static void main(String[] args) {
-        Cliente mock = new Cliente(1, "NombreDeUsuario", "Apellido", "correo@correo.com", "123", "123");
-        SwingUtilities.invokeLater(() -> new PrincipalView(mock).setVisible(true));
-    }
 }

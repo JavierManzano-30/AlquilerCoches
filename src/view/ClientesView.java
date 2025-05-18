@@ -175,9 +175,4 @@ public class ClientesView extends JFrame {
                 ok ? "Datos actualizados" : "Error al guardar cambios",
                 "Perfil", ok ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
     }
-
-    public static void main(String[] args) {
-        Cliente clienteMock = new Cliente(1, "Mario", "Rossi", "mario@email.com", "123456789", "secreta");
-        SwingUtilities.invokeLater(() -> new ClientesView(clienteMock).setVisible(true));
-    }
 }

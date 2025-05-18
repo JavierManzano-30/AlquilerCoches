@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class Conexion {
+public class Conexion_en_deshuso {
 
     private static final String URL = "jdbc:mysql://localhost:3306/alquiler_coches_db";
     private static final String USER = "root";

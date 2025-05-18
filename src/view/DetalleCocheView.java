@@ -115,7 +115,7 @@ public class DetalleCocheView extends JFrame {
 
         panelDer.add(etiqueta("CABALLOS", coche.getCaballos() + " CV"));
         panelDer.add(etiqueta("CILINDRADA", coche.getCilindrada() + " CC"));
-        panelDer.add(etiqueta("ECO", "Sí")); // Placeholder, reemplazar luego si se añade
+        panelDer.add(etiqueta("TRANSMISIÓN", coche.getTransmision().toUpperCase()));
         panelDer.add(Box.createVerticalStrut(40));
         panelDer.add(etiqueta("PRECIO/DÍA", String.format("%.0f€", coche.getPrecio()), true));
 
@@ -193,12 +193,13 @@ public class DetalleCocheView extends JFrame {
         }
 
         double total = dias * coche.getPrecio();
-        Alquiler alquiler = new Alquiler();
-        alquiler.setIdCliente(cliente.getId());
-        alquiler.setIdCoche(coche.getId());
-        alquiler.setFechaInicio(LocalDate.now().toString());
-        alquiler.setFechaFin(LocalDate.now().plusDays(dias).toString());
-        alquiler.setTotal(total);
+        Alquiler alquiler = new Alquiler(
+            cliente.getId(),
+            coche.getId(),
+            LocalDate.now().toString(),
+            dias,
+            total
+        );
 
         boolean exito = new AlquilerDAO().crearAlquiler(alquiler);
         if (exito) {
@@ -208,11 +209,5 @@ public class DetalleCocheView extends JFrame {
         } else {
             JOptionPane.showMessageDialog(this, "Error al registrar el alquiler.");
         }
-    }
-
-    public static void main(String[] args) {
-        Cliente clienteMock = new Cliente(1, "Mario", "Rossi", "mario@email.com", "123456789", "secreta");
-        Coche cocheMock = new Coche(1, "Toyota", "Supra", 2020, 85.0, true, 340, 3000);
-        SwingUtilities.invokeLater(() -> new DetalleCocheView(cocheMock, clienteMock).setVisible(true));
     }
 }

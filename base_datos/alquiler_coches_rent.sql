@@ -1,35 +1,31 @@
 
--- BASE DE DATOS FINAL: alquiler_coches_final
-DROP DATABASE IF EXISTS alquiler_coches_final;
-CREATE DATABASE alquiler_coches_final;
-USE alquiler_coches_final;
+-- BLOQUE 1: Crear base de datos y tablas
+DROP DATABASE IF EXISTS alquiler_coches_rent;
+CREATE DATABASE alquiler_coches_rent;
+USE alquiler_coches_rent;
 
--- Tabla de usuarios (por si hay admins, se puede ampliar)
 CREATE TABLE usuarios (
-    email VARCHAR(100) PRIMARY KEY,
-    password VARCHAR(255) NOT NULL,
-    rol ENUM('cliente', 'admin') DEFAULT 'cliente'
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(100) NOT NULL,
+    rol VARCHAR(20) NOT NULL
 );
 
--- Tabla de clientes (relacionado a usuarios)
 CREATE TABLE clientes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL,
     apellido VARCHAR(50) NOT NULL,
     telefono VARCHAR(20) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    FOREIGN KEY (email) REFERENCES usuarios(email)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE
+    dni VARCHAR(15) NOT NULL,
+    password VARCHAR(100) NOT NULL
 );
 
--- Tabla de marcas
 CREATE TABLE marca (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL UNIQUE
 );
 
--- Tabla de modelos
 CREATE TABLE modelo (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL,
@@ -40,7 +36,6 @@ CREATE TABLE modelo (
         ON UPDATE CASCADE
 );
 
--- Tabla de coches
 CREATE TABLE coches (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_modelo INT NOT NULL,
@@ -55,8 +50,6 @@ CREATE TABLE coches (
         ON UPDATE CASCADE
 );
 
-
--- Tabla de alquileres
 CREATE TABLE alquileres (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_cliente INT NOT NULL,
@@ -72,32 +65,31 @@ CREATE TABLE alquileres (
         ON UPDATE CASCADE
 );
 
--- Datos de prueba
-
--- Usuarios
-INSERT INTO usuarios (email, password, rol) VALUES
+-- BLOQUE 2: Insertar usuarios y clientes
+INSERT INTO usuarios (username, password, rol) VALUES
 ('cliente1@example.com', '1234', 'cliente'),
 ('admin@example.com', 'adminpass', 'admin');
 
--- Clientes
-INSERT INTO clientes (nombre, apellido, telefono, email) VALUES
-('Juan', 'Pérez', '600123456', 'cliente1@example.com');
+INSERT INTO clientes (nombre, apellido, telefono, email, dni, password) VALUES
+('Juan', 'Pérez', '600123456', 'cliente1@example.com', '12345678Z', '1234');
 
--- Marcas
-INSERT INTO marca (nombre) VALUES ('Toyota'), ('Mazda'), ('Nissan');
+-- BLOQUE 3: Insertar marcas y modelos
+INSERT INTO marca (nombre) VALUES 
+('Toyota'), ('Mazda'), ('Nissan'), ('Honda');
 
--- Modelos
 INSERT INTO modelo (nombre, id_marca) VALUES
 ('Supra', 1),
 ('RX-7', 2),
-('Skyline', 3);
+('Skyline', 3),
+('NSX', 4);
 
--- Coches
-INSERT INTO coches (id_modelo, anio, precio_dia, disponible, caballos, cilindrada) VALUES
-(1, 2020, 85.00, TRUE, 340, 3000),
-(2, 1999, 70.00, TRUE, 276, 1300),
-(3, 2002, 90.00, TRUE, 280, 2600);
+-- BLOQUE 4: Insertar coches
+INSERT INTO coches (id_modelo, anio, precio_dia, disponible, caballos, cilindrada, transmision) VALUES
+(1, 1998, 85.00, TRUE, 340, 3000, 'manual'),
+(2, 1999, 70.00, TRUE, 276, 3000, 'manual'),
+(3, 2002, 90.00, TRUE, 280, 2600, 'automatico'),
+(4, 2001, 75.00, TRUE, 300, 2600, 'automatico');
 
--- Alquileres
+-- BLOQUE 5: Insertar alquileres
 INSERT INTO alquileres (id_cliente, id_coche, fecha_inicio, dias, total) VALUES
 (1, 1, CURDATE(), 3, 255.00);

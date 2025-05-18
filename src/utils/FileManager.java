@@ -32,7 +32,9 @@ public class FileManager {
                         String.valueOf(c.getPrecio()),
                         String.valueOf(c.getCaballos()),
                         String.valueOf(c.getCilindrada()),
-                        String.valueOf(c.isDisponible())));
+                        c.getTransmision(),  // añadido
+                        String.valueOf(c.isDisponible())
+                ));
                 bw.newLine();
             }
         }
@@ -44,7 +46,7 @@ public class FileManager {
             String linea;
             while ((linea = br.readLine()) != null) {
                 String[] partes = linea.split(SEPARADOR);
-                if (partes.length != 8) continue;
+                if (partes.length != 9) continue; // ahora 9 columnas
                 try {
                     Coche c = new Coche(
                             Integer.parseInt(partes[0]),
@@ -52,9 +54,10 @@ public class FileManager {
                             partes[2],
                             Integer.parseInt(partes[3]),
                             Double.parseDouble(partes[4]),
-                            Boolean.parseBoolean(partes[7]),
+                            Boolean.parseBoolean(partes[8]),
                             Integer.parseInt(partes[5]),
-                            Integer.parseInt(partes[6])
+                            Integer.parseInt(partes[6]),
+                            partes[7] // transmision
                     );
                     lista.add(c);
                 } catch (NumberFormatException ex) {
@@ -79,19 +82,19 @@ public class FileManager {
             if (detalles.isEmpty()) {
                 bw.write("No hay alquileres registrados.\n");
             } else {
-                bw.write(String.format("%-6s %-12s %-12s %-5s %-10s\n", "ID", "Marca", "Modelo", "Días", "Total (€)"));
+                bw.write(String.format("%-6s %-10s %-10s %-6s %-10s %-10s\n", "ID", "Marca", "Modelo", "Días", "Trans.", "Total (€)"));
                 bw.write("----------------------------------------------------\n");
 
                 double suma = 0;
                 for (DetalleAlquiler d : detalles) {
                     Coche c = d.getCoche();
-                    bw.write(String.format("%-6d %-12s %-12s %-5d %-10.2f\n",
-                            c.getId(), c.getMarca(), c.getModelo(), d.getDias(), d.getTotal()));
+                    bw.write(String.format("%-6d %-10s %-10s %-6d %-10s %-10.2f\n",
+                            c.getId(), c.getMarca(), c.getModelo(), d.getDias(), c.getTransmision(), d.getTotal()));
                     suma += d.getTotal();
                 }
 
                 bw.write("----------------------------------------------------\n");
-                bw.write(String.format("%-36s %10.2f €\n", "TOTAL A PAGAR:", suma));
+                bw.write(String.format("%-42s %10.2f €\n", "TOTAL A PAGAR:", suma));
             }
 
             bw.write("====================================================\n");
