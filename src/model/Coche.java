@@ -1,6 +1,11 @@
 package model;
 
+/**
+ * Clase que representa un coche dentro del sistema de alquiler.
+ * Contiene atributos relacionados con las características del vehículo.
+ */
 public class Coche {
+
     private int id;
     private String marca;
     private String modelo;
@@ -9,8 +14,17 @@ public class Coche {
     private boolean disponible;
     private int caballos;
     private int cilindrada;
+    private String transmision;
 
-    // Constructor sin ID (por si el ID lo genera la base de datos)
+
+    /**
+     * Constructor vacío requerido por algunos frameworks y DAOs.
+     */
+    public Coche() {}
+
+    /**
+     * Constructor para inserciones sin ID aún asignado.
+     */
     public Coche(String marca, String modelo, int anio, double precio) {
         this.marca = marca;
         this.modelo = modelo;
@@ -18,7 +32,9 @@ public class Coche {
         this.precio = precio;
     }
 
-    // Constructor con ID (para cuando recuperas un coche de la base de datos)
+    /**
+     * Constructor para recuperaciones parciales desde la base de datos.
+     */
     public Coche(int id, String marca, String modelo, int anio, double precio) {
         this.id = id;
         this.marca = marca;
@@ -26,8 +42,11 @@ public class Coche {
         this.anio = anio;
         this.precio = precio;
     }
-    
-    public Coche(int id, String marca, String modelo, int anio, double precio, boolean disponible, int caballos, int cilindrada) {
+
+    /**
+     * Constructor completo con todos los atributos.
+     */
+    public Coche(int id, String marca, String modelo, int anio, double precio, boolean disponible, int caballos, int cilindrada, String transmision) {
         this.id = id;
         this.marca = marca;
         this.modelo = modelo;
@@ -36,44 +55,37 @@ public class Coche {
         this.disponible = disponible;
         this.caballos = caballos;
         this.cilindrada = cilindrada;
+        this.transmision = transmision;
     }
 
- // Getters
-    public int getId() {
-        return id;
-    }
+    // Getters
+    public int getId() { return id; }
+    public String getMarca() { return marca; }
+    public String getModelo() { return modelo; }
+    public int getAnio() { return anio; }
+    public double getPrecio() { return precio; }
+    public boolean isDisponible() { return disponible; }
+    public int getCaballos() { return caballos; }
+    public int getCilindrada() { return cilindrada; }
+    public String getTransmision() { return transmision; }
 
-    public String getMarca() {
-        return marca;
-    }
+    // Setters
+    public void setId(int id) { this.id = id; }
+    public void setMarca(String marca) { this.marca = marca; }
+    public void setModelo(String modelo) { this.modelo = modelo; }
+    public void setAnio(int anio) { this.anio = anio; }
+    public void setPrecio(double precio) { this.precio = precio; }
+    public void setDisponible(boolean disponible) { this.disponible = disponible; }
+    public void setCaballos(int caballos) { this.caballos = caballos; }
+    public void setCilindrada(int cilindrada) { this.cilindrada = cilindrada; }
+    public void setTransmision(String transmision) { this.transmision = transmision; }
 
-    public String getModelo() {
-        return modelo;
-    }
-
-    public int getAnio() {
-        return anio;
-    }
-
-    public double getPrecio() {
-        return precio;
-    }
-
-    public boolean isDisponible() {
-        return disponible;
-    }
-
-    public int getCaballos() {
-        return caballos;
-    }
-
-    public int getCilindrada() {
-        return cilindrada;
-    }
-
-    // Para depuración
     @Override
     public String toString() {
-        return "Coche [id=" + id + ", marca=" + marca + ", modelo=" + modelo + ", anio=" + anio + ", precio=" + precio + "]";
+        return String.format(
+            "Coche{id=%d, marca='%s', modelo='%s', año=%d, precio=%.2f, disponible=%s, caballos=%d, cilindrada=%dcc, transmision=%s}",
+            id, marca, modelo, anio, precio, disponible ? "Sí" : "No", caballos, cilindrada, transmision
+        );
     }
+
 }

@@ -1,129 +1,140 @@
 package view;
 
+import model.Cliente;
+
+import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import javax.swing.*;
-
-import model.Cliente;
+import java.net.URL;
 
 public class PrincipalView extends JFrame {
 
-    private static final long serialVersionUID = 1L;
-    private JPanel contentPane;
-    private final Color COLOR_BASE = new Color(137, 161, 251);
-    private final Color COLOR_HOVER = new Color(107, 131, 221);
-    private final ImageIcon iconoFondo = new ImageIcon(getClass().getResource("/utils/image/LoginImage.jpg"));
-    private final ImageIcon Fondo = new ImageIcon(getClass().getResource("/utils/image/PrincipalImage.jpg"));
-    private Cliente clienteLogueado;
-
-    private void initUI() {
-        setTitle("Alquiler de Coches");
-        setIconImage(iconoFondo.getImage());
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(600, 400);
-        setMinimumSize(new Dimension(400, 300));
+    public PrincipalView(Cliente cliente) {
+        setTitle("RentJDMCars - Principal");
+        setSize(1000, 500);
         setLocationRelativeTo(null);
+        setUndecorated(true);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        contentPane = new JPanel() {
-            @Override
+        JPanel contenedor = new JPanel(new BorderLayout());
+        contenedor.setBorder(BorderFactory.createLineBorder(Color.GRAY, 2));
+        setContentPane(contenedor);
+
+        // Fondo con imagen atenuada
+        JPanel panelFondo = new JPanel(null) {
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
-                g.drawImage(Fondo.getImage(), 0, 0, getWidth(), getHeight(), this);
+                try {
+                    URL location = getClass().getResource("/utils/image/fondo_principal.jpg");
+                    if (location != null) {
+                        ImageIcon fondo = new ImageIcon(location);
+                        g.drawImage(fondo.getImage(), 0, 0, getWidth(), getHeight(), this);
+                        g.setColor(new Color(0, 0, 0, 150)); // Atenuar fondo
+                        g.fillRect(0, 0, getWidth(), getHeight());
+                    } else {
+                        g.setColor(Color.DARK_GRAY);
+                        g.fillRect(0, 0, getWidth(), getHeight());
+                    }
+                } catch (Exception e) {
+                    g.setColor(Color.BLACK);
+                    g.fillRect(0, 0, getWidth(), getHeight());
+                }
             }
         };
+        contenedor.add(panelFondo, BorderLayout.CENTER);
 
-        contentPane.setLayout(new BoxLayout(contentPane, BoxLayout.Y_AXIS));
-        setContentPane(contentPane);
+        // Controles ventana
+        JButton btnMin = crearControlVentana("—", new Color(127, 140, 141));
+        btnMin.setBounds(920, 10, 30, 25);
+        btnMin.addActionListener(e -> setState(Frame.ICONIFIED));
+        panelFondo.add(btnMin);
 
-        contentPane.add(Box.createVerticalStrut(40));
+        JButton btnClose = crearControlVentana("X", new Color(192, 57, 43));
+        btnClose.setBounds(960, 10, 30, 25);
+        btnClose.addActionListener(e -> System.exit(0));
+        panelFondo.add(btnClose);
 
-        JLabel lblBienvenido = new JLabel("Bienvenido " + clienteLogueado.getNombre());
-        lblBienvenido.setAlignmentX(Component.CENTER_ALIGNMENT);
-        lblBienvenido.setFont(new Font("SansSerif", Font.BOLD, 22));
-        lblBienvenido.setForeground(Color.BLACK);
-        contentPane.add(lblBienvenido);
+        // Título
+        JLabel lblTitulo = new JLabel("RENTJDMCAR");
+        lblTitulo.setBounds(380, 40, 400, 40);
+        lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 32));
+        lblTitulo.setForeground(Color.WHITE);
+        panelFondo.add(lblTitulo);
 
-        contentPane.add(Box.createVerticalStrut(30));
-        contentPane.add(crearBoton("Ver Coches"));
-        contentPane.add(Box.createVerticalStrut(10));
-        contentPane.add(crearBoton("Mis Alquileres"));
-        contentPane.add(Box.createVerticalStrut(10));
-        contentPane.add(crearBoton("Cerrar Sesión"));
+        JLabel lblBienvenido = new JLabel("Bienvenido " + cliente.getNombre());
+        lblBienvenido.setBounds(420, 85, 300, 30);
+        lblBienvenido.setFont(new Font("SansSerif", Font.PLAIN, 18));
+        lblBienvenido.setForeground(Color.WHITE);
+        panelFondo.add(lblBienvenido);
+
+        // Botones principales
+        JButton btnPerfil = crearBoton("MI PERFIL");
+        btnPerfil.setBounds(200, 180, 160, 160);
+        panelFondo.add(btnPerfil);
+        btnPerfil.addActionListener(e -> {
+            new ClientesView(cliente).setVisible(true);
+            dispose();
+        });
+
+        JButton btnCoches = crearBoton("VER COCHES");
+        btnCoches.setBounds(420, 180, 160, 160);
+        panelFondo.add(btnCoches);
+        btnCoches.addActionListener(e -> {
+            new CochesView(cliente).setVisible(true);
+            dispose();
+        });
+
+        JButton btnAlquilados = crearBoton("ALQUILADOS");
+        btnAlquilados.setBounds(640, 180, 160, 160);
+        panelFondo.add(btnAlquilados);
+        btnAlquilados.addActionListener(e -> {
+            new AlquileresView(cliente).setVisible(true);
+            dispose();
+        });
+
+        // Cerrar sesión
+        JButton btnCerrarSesion = new JButton("CERRAR SESIÓN");
+        btnCerrarSesion.setBounds(780, 430, 180, 30);
+        btnCerrarSesion.setBackground(new Color(231, 76, 60));
+        btnCerrarSesion.setForeground(Color.WHITE);
+        btnCerrarSesion.setFont(new Font("Monospaced", Font.BOLD, 14));
+        btnCerrarSesion.setFocusPainted(false);
+        panelFondo.add(btnCerrarSesion);
+        btnCerrarSesion.addActionListener(e -> {
+            new LoginView().setVisible(true);
+            dispose();
+        });
     }
 
-    public PrincipalView(Cliente clienteLogueado) {
-        this.clienteLogueado = clienteLogueado;
-        initUI(); // método para construir la interfaz
+    private JButton crearControlVentana(String texto, Color fondo) {
+        JButton btn = new JButton(texto);
+        btn.setFocusPainted(false);
+        btn.setMargin(new Insets(0, 0, 0, 0));
+        btn.setFont(new Font("SansSerif", Font.BOLD, 14));
+        btn.setForeground(Color.WHITE);
+        btn.setBackground(fondo);
+        btn.setBorder(BorderFactory.createEmptyBorder());
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        btn.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                btn.setBackground(fondo.darker());
+            }
+
+            public void mouseExited(MouseEvent e) {
+                btn.setBackground(fondo);
+            }
+        });
+
+        return btn;
     }
 
     private JButton crearBoton(String texto) {
-        JButton boton = new JButton(texto) {
-            private Color currentColor = COLOR_BASE;
-
-            @Override
-            protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(currentColor);
-                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 20, 20);
-                super.paintComponent(g);
-                g2.dispose();
-            }
-
-            @Override
-            protected void paintBorder(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g.create();
-                g2.setColor(Color.WHITE);
-                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 20, 20);
-                g2.dispose();
-            }
-
-            {
-                setForeground(Color.WHITE);
-                setOpaque(false);
-                setContentAreaFilled(false);
-                setBorderPainted(false);
-                setFocusPainted(false);
-                setAlignmentX(Component.CENTER_ALIGNMENT);
-                setMaximumSize(new Dimension(200, 40));
-
-                addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseEntered(MouseEvent e) {
-                        currentColor = COLOR_HOVER;
-                        repaint();
-                    }
-
-                    @Override
-                    public void mouseExited(MouseEvent e) {
-                        currentColor = COLOR_BASE;
-                        repaint();
-                    }
-                });
-
-                // 💡 Acciones para cada botón
-                addActionListener(e -> {
-                    switch (texto) {
-                        case "Ver Coches":
-                            new CochesView(clienteLogueado).setVisible(true);
-                            dispose();
-                            break;
-                        case "Mis Alquileres":
-                            new AlquileresView(clienteLogueado).setVisible(true);
-                            dispose();
-                            break;
-                        case "Cerrar Sesión":
-                            new LoginView().setVisible(true);
-                            dispose();
-                            break;
-                    }
-                });
-
-            }
-        };
-
-        return boton;
+        JButton btn = new JButton(texto);
+        btn.setFont(new Font("Monospaced", Font.BOLD, 16));
+        btn.setBackground(Color.WHITE);
+        btn.setFocusPainted(false);
+        return btn;
     }
-
 }

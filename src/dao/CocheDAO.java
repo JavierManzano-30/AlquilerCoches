@@ -3,98 +3,77 @@ package dao;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+
 import model.Coche;
+import controller.ConexionBD;
 
 public class CocheDAO {
-    
-    private Connection conexion;
 
-    public CocheDAO(Connection conexion) {
-        this.conexion = conexion;
-    }
-
-    public List<Coche> obtenerTodosLosCoches() throws SQLException {
+    public List<Coche> listarCoches() {
         List<Coche> coches = new ArrayList<>();
-        String sql = "SELECT c.id AS coche_id, m.nombre AS marca, mo.nombre AS modelo, c.año, c.precio_dia, c.disponible, c.caballos, c.cilindrada "
-                   + "FROM coches c "
-                   + "JOIN modelo mo ON c.id_modelo = mo.id "
-                   + "JOIN marca m ON mo.id_marca = m.id";
+        String sql = """
+            SELECT 
+                c.id,
+                ma.nombre AS marca,
+                mo.nombre AS modelo,
+                c.anio,
+                c.precio_dia,
+                c.disponible,
+                c.caballos,
+                c.cilindrada,
+                c.transmision
+            FROM coches c
+            JOIN modelo mo ON c.id_modelo = mo.id
+            JOIN marca ma ON mo.id_marca = ma.id
+        """;
 
-        try (Statement stmt = conexion.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+        try (Connection conn = ConexionBD.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
             while (rs.next()) {
                 Coche coche = new Coche(
-                    rs.getInt("coche_id"),
+                    rs.getInt("id"),
                     rs.getString("marca"),
                     rs.getString("modelo"),
-                    rs.getInt("año"),
+                    rs.getInt("anio"),
                     rs.getDouble("precio_dia"),
                     rs.getBoolean("disponible"),
                     rs.getInt("caballos"),
-                    rs.getInt("cilindrada")
+                    rs.getInt("cilindrada"),
+                    rs.getString("transmision") // NUEVO CAMPO
                 );
                 coches.add(coche);
             }
+
+        } catch (SQLException e) {
+            System.err.println("Error al listar coches: " + e.getMessage());
         }
+
         return coches;
     }
 
-    public Coche obtenerCochePorId(int id) throws SQLException {
-        String sql = "SELECT c.id AS coche_id, m.nombre AS marca, mo.nombre AS modelo, " +
-                     "c.año, c.precio_dia, c.disponible, c.caballos, c.cilindrada " +
-                     "FROM coches c " +
-                     "JOIN modelo mo ON c.id_modelo = mo.id " +
-                     "JOIN marca m ON mo.id_marca = m.id " +
-                     "WHERE c.id = ?";
-
-        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    return new Coche(
-                        rs.getInt("coche_id"),
-                        rs.getString("marca"),
-                        rs.getString("modelo"),
-                        rs.getInt("año"),
-                        rs.getDouble("precio_dia"),
-                        rs.getBoolean("disponible"),
-                        rs.getInt("caballos"),
-                        rs.getInt("cilindrada")
-                    );
-                }
-            }
-        }
-        return null;
-    }
-
-
-    public void insertarCoche(Coche coche) throws SQLException {
-        String sql = "INSERT INTO coches (marca, modelo, anio, precio) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
-            stmt.setString(1, coche.getMarca());
-            stmt.setString(2, coche.getModelo());
-            stmt.setInt(3, coche.getAnio());
-            stmt.setDouble(4, coche.getPrecio());
-            stmt.executeUpdate();
+    public boolean marcarComoNoDisponible(int idCoche) {
+        String sql = "UPDATE coches SET disponible = false WHERE id = ?";
+        try (Connection conn = ConexionBD.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idCoche);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al marcar coche como no disponible: " + e.getMessage());
+            return false;
         }
     }
 
-    public void actualizarCoche(Coche coche) throws SQLException {
-        String sql = "UPDATE coches SET marca = ?, modelo = ?, anio = ?, precio = ? WHERE id = ?";
-        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
-            stmt.setString(1, coche.getMarca());
-            stmt.setString(2, coche.getModelo());
-            stmt.setInt(3, coche.getAnio());
-            stmt.setDouble(4, coche.getPrecio());
-            stmt.setInt(5, coche.getId());
-            stmt.executeUpdate();
-        }
-    }
-
-    public void eliminarCoche(int id) throws SQLException {
-        String sql = "DELETE FROM coches WHERE id = ?";
-        try (PreparedStatement stmt = conexion.prepareStatement(sql)) {
-            stmt.setInt(1, id);
-            stmt.executeUpdate();
+    public boolean marcarComoDisponible(int idCoche) {
+        String sql = "UPDATE coches SET disponible = true WHERE id = ?";
+        try (Connection conn = ConexionBD.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, idCoche);
+            return stmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            System.err.println("Error al marcar coche como disponible: " + e.getMessage());
+            return false;
         }
     }
 }

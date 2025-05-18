@@ -1,9 +1,15 @@
 package view;
 
+import dao.ClienteDAO;
+import dao.UsuarioDAO;
+import model.Cliente;
+import model.Usuario;
+import utils.Validador;
+
 import javax.swing.*;
 import java.awt.*;
-import model.Cliente;
-import dao.ClienteDAO;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class RegistroView extends JFrame {
 
@@ -11,52 +17,142 @@ public class RegistroView extends JFrame {
     private JTextField txtApellido;
     private JTextField txtEmail;
     private JTextField txtTelefono;
+    private JTextField txtDni;
     private JPasswordField txtPassword;
+    private JLabel lblError;
 
     public RegistroView() {
-        setTitle("Registro de Cliente");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(400, 400);
+        setTitle("RentJMDCars - Registro");
+        setSize(1000, 500);
         setLocationRelativeTo(null);
+        setUndecorated(true);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        JPanel panel = new JPanel();
-        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-        panel.setLayout(new GridLayout(7, 2, 10, 10));
+        JPanel contenedor = new JPanel(new BorderLayout());
+        contenedor.setBorder(BorderFactory.createLineBorder(Color.GRAY, 2));
+        setContentPane(contenedor);
 
-        panel.add(new JLabel("Nombre:"));
-        txtNombre = new JTextField();
-        panel.add(txtNombre);
+        // Panel izquierdo con imagen
+        JPanel panelImagen = new JPanel() {
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                ImageIcon fondo = new ImageIcon(getClass().getResource("/utils/image/fondo_login.jpg"));
+                g.drawImage(fondo.getImage(), 0, 0, getWidth(), getHeight(), this);
+            }
+        };
+        panelImagen.setPreferredSize(new Dimension(700, 500));
+        contenedor.add(panelImagen, BorderLayout.CENTER);
 
-        panel.add(new JLabel("Apellido:"));
-        txtApellido = new JTextField();
-        panel.add(txtApellido);
+        // Panel derecho con formulario
+        JPanel panelForm = new JPanel(null);
+        panelForm.setPreferredSize(new Dimension(300, 500));
+        panelForm.setBackground(Color.WHITE);
+        contenedor.add(panelForm, BorderLayout.EAST);
 
-        panel.add(new JLabel("Email:"));
-        txtEmail = new JTextField();
-        panel.add(txtEmail);
+        // Controles personalizados
+        JPanel panelControles = new JPanel(null);
+        panelControles.setBounds(0, 0, 300, 40);
+        panelControles.setBackground(Color.WHITE);
 
-        panel.add(new JLabel("Teléfono:"));
-        txtTelefono = new JTextField();
-        panel.add(txtTelefono);
+        JButton btnMinimizar = crearControlVentana("—");
+        btnMinimizar.setBounds(220, 10, 30, 25);
+        btnMinimizar.addActionListener(e -> setState(Frame.ICONIFIED));
 
-        panel.add(new JLabel("Contraseña:"));
+        JButton btnCerrar = crearControlVentana("X");
+        btnCerrar.setBounds(260, 10, 30, 25);
+        btnCerrar.addActionListener(e -> System.exit(0));
+
+        panelControles.add(btnMinimizar);
+        panelControles.add(btnCerrar);
+        panelForm.add(panelControles);
+
+        // Formulario
+        JLabel lblTitulo = new JLabel("Crear Cuenta");
+        lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 20));
+        lblTitulo.setBounds(80, 50, 200, 30);
+        panelForm.add(lblTitulo);
+
+        int y = 100;
+        int spacing = 50;
+
+        txtNombre = agregarCampo(panelForm, "Nombre:", y);
+        txtApellido = agregarCampo(panelForm, "Apellido:", y += spacing);
+        txtEmail = agregarCampo(panelForm, "Email:", y += spacing);
+        txtTelefono = agregarCampo(panelForm, "Teléfono:", y += spacing);
+        txtDni = agregarCampo(panelForm, "DNI:", y += spacing); // NUEVO CAMPO
         txtPassword = new JPasswordField();
-        panel.add(txtPassword);
+        agregarLabel(panelForm, "Contraseña:", y += spacing);
+        txtPassword.setBounds(30, y + 20, 240, 25);
+        txtPassword.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        txtPassword.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        panelForm.add(txtPassword);
 
-        JButton btnRegistrar = new JButton("Registrarse");
-        JButton btnCancelar = new JButton("Cancelar");
+        JButton btnRegistrar = new JButton("REGISTRAR");
+        btnRegistrar.setBounds(30, 420, 110, 30); // BAJADO
+        btnRegistrar.setBackground(new Color(76, 175, 80));
+        btnRegistrar.setForeground(Color.WHITE);
+        btnRegistrar.setFocusPainted(false);
+        panelForm.add(btnRegistrar);
 
+        JButton btnVolver = new JButton("VOLVER");
+        btnVolver.setBounds(160, 420, 110, 30); // BAJADO
+        btnVolver.setBackground(new Color(121, 134, 203));
+        btnVolver.setForeground(Color.WHITE);
+        btnVolver.setFocusPainted(false);
+        panelForm.add(btnVolver);
+
+        lblError = new JLabel("");
+        lblError.setBounds(30, 460, 250, 25); // BAJADO
+        lblError.setForeground(Color.RED);
+        lblError.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        panelForm.add(lblError);
+
+        // Acciones
         btnRegistrar.addActionListener(e -> registrarCliente());
-        btnCancelar.addActionListener(e -> {
-            new LoginView(); // Vuelve a la pantalla de login
+        btnVolver.addActionListener(e -> {
+            new LoginView().setVisible(true);
             dispose();
         });
+    }
 
-        panel.add(btnRegistrar);
-        panel.add(btnCancelar);
+    private JTextField agregarCampo(JPanel panel, String etiqueta, int y) {
+        agregarLabel(panel, etiqueta, y);
+        JTextField campo = new JTextField();
+        campo.setBounds(30, y + 20, 240, 25);
+        campo.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        campo.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        panel.add(campo);
+        return campo;
+    }
 
-        add(panel);
-        setVisible(true);
+    private void agregarLabel(JPanel panel, String texto, int y) {
+        JLabel label = new JLabel(texto);
+        label.setBounds(30, y, 240, 20);
+        label.setFont(new Font("SansSerif", Font.PLAIN, 13));
+        panel.add(label);
+    }
+
+    private JButton crearControlVentana(String texto) {
+        JButton btn = new JButton(texto);
+        btn.setFocusPainted(false);
+        btn.setMargin(new Insets(0, 0, 0, 0));
+        btn.setFont(new Font("SansSerif", Font.BOLD, 14));
+        btn.setForeground(Color.BLACK);
+        btn.setBackground(new Color(230, 230, 230));
+        btn.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        btn.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                btn.setBackground(new Color(210, 210, 210));
+            }
+
+            public void mouseExited(MouseEvent e) {
+                btn.setBackground(new Color(230, 230, 230));
+            }
+        });
+
+        return btn;
     }
 
     private void registrarCliente() {
@@ -64,30 +160,67 @@ public class RegistroView extends JFrame {
         String apellido = txtApellido.getText().trim();
         String email = txtEmail.getText().trim();
         String telefono = txtTelefono.getText().trim();
+        String dni = txtDni.getText().trim();
         String password = new String(txtPassword.getPassword()).trim();
 
-        if (nombre.isEmpty() || apellido.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Por favor, completa todos los campos obligatorios.");
+        if (nombre.isEmpty() || apellido.isEmpty() || email.isEmpty()
+                || telefono.isEmpty() || dni.isEmpty() || password.isEmpty()) {
+            lblError.setText("Completa todos los campos.");
             return;
         }
 
-        Cliente nuevo = new Cliente();
-        nuevo.setNombre(nombre);
-        nuevo.setApellido(apellido);
-        nuevo.setEmail(email);
-        nuevo.setTelefono(telefono);
-        nuevo.setPassword(password);
+        if (!Validador.esNombreValido(nombre)) {
+            lblError.setText("El nombre solo debe contener letras.");
+            return;
+        }
 
-        ClienteDAO dao = new ClienteDAO();
-        boolean exito = dao.registrarCliente(nuevo);
+        if (!Validador.esApellidoValido(apellido)) {
+            lblError.setText("El apellido solo debe contener letras.");
+            return;
+        }
 
-        if (exito) {
-            JOptionPane.showMessageDialog(this, "¡Registro exitoso! Ahora puedes iniciar sesión.");
-            LoginView login = new LoginView();
-            login.setVisible(true);
+        if (!Validador.esEmailValido(email)) {
+            lblError.setText("Introduce un correo electrónico válido.");
+            return;
+        }
+
+        if (!Validador.esTelefonoValido(telefono)) {
+            lblError.setText("El teléfono debe tener entre 9 y 15 dígitos.");
+            return;
+        }
+
+        if (!Validador.esDniValido(dni)) {
+            lblError.setText("DNI inválido. Revisa el formato y letra.");
+            return;
+        }
+
+        if (!Validador.esPasswordValida(password)) {
+            lblError.setText("La contraseña debe tener al menos 6 caracteres.");
+            return;
+        }
+
+        UsuarioDAO usuarioDAO = new UsuarioDAO();
+        if (usuarioDAO.existeUsuario(email)) {
+            lblError.setText("Ese email ya está en uso.");
+            return;
+        }
+
+        Usuario usuario = new Usuario(email, password, "cliente");
+        Cliente cliente = new Cliente(0, nombre, apellido, email, telefono, dni, password);
+
+        boolean okUser = usuarioDAO.registrarUsuario(usuario);
+        boolean okCliente = new ClienteDAO().registrarCliente(cliente);
+
+        if (okUser && okCliente) {
+            JOptionPane.showMessageDialog(this, "Registro exitoso.");
+            new LoginView().setVisible(true);
             dispose();
         } else {
-            JOptionPane.showMessageDialog(this, "Error al registrar. Verifica que el email no esté en uso.");
+            lblError.setText("Error al registrar.");
         }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new RegistroView().setVisible(true));
     }
 }
