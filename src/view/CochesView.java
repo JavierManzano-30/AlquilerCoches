@@ -11,6 +11,12 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
+
+import com.toedter.calendar.JDateChooser;
+import java.util.Date;
+import java.util.HashSet;
+import java.time.ZoneId;
 
 public class CochesView extends JFrame {
 
@@ -149,37 +155,63 @@ public class CochesView extends JFrame {
         int idCoche = Integer.parseInt(modelo.getValueAt(fila, 0).toString());
         double precio = Double.parseDouble(modelo.getValueAt(fila, 4).toString());
 
-        String diasStr = JOptionPane.showInputDialog(this, "¿Cuántos días deseas alquilar el coche?", "Días", JOptionPane.QUESTION_MESSAGE);
-        if (diasStr == null || diasStr.trim().isEmpty()) return;
+        // Obtener fechas bloqueadas
+        AlquilerDAO alquilerDAO = new AlquilerDAO();
+        List<Alquiler> alquileresCoche = alquilerDAO.obtenerAlquileresCoche(idCoche);
+        Set<LocalDate> fechasBloqueadas = calcularFechasBloqueadas(alquileresCoche);
+
+        // Crear JDateChoosers
+        JDateChooser fechaInicioPicker = new JDateChooser();
+        JDateChooser fechaFinPicker = new JDateChooser();
+        fechaInicioPicker.setDateFormatString("yyyy-MM-dd");
+        fechaFinPicker.setDateFormatString("yyyy-MM-dd");
+
+        JPanel panel = new JPanel(new GridLayout(2, 2));
+        panel.add(new JLabel("Fecha inicio:"));
+        panel.add(fechaInicioPicker);
+        panel.add(new JLabel("Fecha fin:"));
+        panel.add(fechaFinPicker);
+
+        int opcion = JOptionPane.showConfirmDialog(this, panel, "Selecciona fechas de alquiler", JOptionPane.OK_CANCEL_OPTION);
+        if (opcion != JOptionPane.OK_OPTION) return;
 
         try {
-            int dias = Integer.parseInt(diasStr.trim());
-            if (dias <= 0) throw new NumberFormatException();
+            LocalDate inicio = fechaInicioPicker.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate fin = fechaFinPicker.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 
-            LocalDate inicio = LocalDate.now();
+            if (inicio.isAfter(fin)) {
+                JOptionPane.showMessageDialog(this, "La fecha de fin no puede ser anterior a la de inicio.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            // Comprobar conflicto con fechas bloqueadas
+            LocalDate tmp = inicio;
+            while (!tmp.isAfter(fin)) {
+                if (fechasBloqueadas.contains(tmp)) {
+                    JOptionPane.showMessageDialog(this, "El coche no está disponible en las fechas seleccionadas.", "Ocupado", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+                tmp = tmp.plusDays(1);
+            }
+
+            long dias = java.time.temporal.ChronoUnit.DAYS.between(inicio, fin) + 1;
             double total = dias * precio;
 
-            Alquiler alquiler = new Alquiler(
-                cliente.getId(),
-                idCoche,
-                inicio.toString(),
-                dias,
-                total
-            );
+            Alquiler alquiler = new Alquiler(cliente.getId(), idCoche, inicio, fin, total);
+            boolean ok = alquilerDAO.crearAlquiler(alquiler);
 
-            boolean ok = new AlquilerDAO().crearAlquiler(alquiler);
             if (ok) {
-                new CocheDAO().marcarComoNoDisponible(idCoche);
+                new CocheDAO().marcarComoNoDisponible(idCoche); // opcional, si quieres
                 JOptionPane.showMessageDialog(this, "Coche alquilado correctamente.");
                 cargarCoches();
             } else {
                 JOptionPane.showMessageDialog(this, "Error al registrar alquiler.", "Error", JOptionPane.ERROR_MESSAGE);
             }
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "Número de días inválido", "Error", JOptionPane.ERROR_MESSAGE);
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Error al interpretar las fechas.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 
     private void verDetalle() {
         int fila = tabla.getSelectedRow();
@@ -229,4 +261,30 @@ public class CochesView extends JFrame {
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return btn;
     }
+    
+    private Set<LocalDate> calcularFechasBloqueadas(List<Alquiler> alquileres) {
+        Set<LocalDate> fechas = new HashSet<>();
+        for (Alquiler a : alquileres) {
+            LocalDate inicio = a.getFechaInicio();
+            LocalDate fin = a.getFechaFin();
+
+            // Añadir días del alquiler
+            while (!inicio.isAfter(fin)) {
+                fechas.add(inicio);
+                inicio = inicio.plusDays(1);
+            }
+
+            // Añadir día de limpieza
+            LocalDate limpieza = fin.plusDays(1);
+            fechas.add(limpieza);
+
+            // Si limpieza o siguiente cae en fin de semana, bloquear hasta el lunes
+            while (limpieza.getDayOfWeek().getValue() >= 6) {
+                limpieza = limpieza.plusDays(1);
+                fechas.add(limpieza);
+            }
+        }
+        return fechas;
+    }
+
 }

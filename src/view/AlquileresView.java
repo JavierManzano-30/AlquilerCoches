@@ -106,7 +106,7 @@ public class AlquileresView extends JFrame {
     private void cargarAlquileres() {
         DefaultTableModel model = new DefaultTableModel();
         model.setColumnIdentifiers(new String[]{
-            "Marca", "Modelo", "Año", "Días", "Precio/Día", "Total (€)"
+            "Marca", "Modelo", "Año", "Desde", "Hasta", "Días", "Precio/Día", "Total (€)"
         });
 
         AlquilerDAO dao = new AlquilerDAO();
@@ -117,6 +117,8 @@ public class AlquileresView extends JFrame {
                 detalle.getCoche().getMarca(),
                 detalle.getCoche().getModelo(),
                 detalle.getCoche().getAnio(),
+                detalle.getFechaInicio(), // NUEVO
+                detalle.getFechaFin(),    // NUEVO
                 detalle.getDias(),
                 detalle.getCoche().getPrecio(),
                 detalle.getTotal()
