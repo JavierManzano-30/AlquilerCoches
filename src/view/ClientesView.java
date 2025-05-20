@@ -2,6 +2,8 @@ package view;
 
 import dao.ClienteDAO;
 import model.Cliente;
+import utils.Validador;
+
 
 import javax.swing.*;
 import java.awt.*;
@@ -164,15 +166,52 @@ public class ClientesView extends JFrame {
     }
 
     private void guardarCambios() {
-        cliente.setNombre(txtNombre.getText().trim());
-        cliente.setApellido(txtApellido.getText().trim());
-        cliente.setEmail(txtEmail.getText().trim());
-        cliente.setTelefono(txtTelefono.getText().trim());
-        cliente.setPassword(txtPassword.getText().trim());
+        String nombre = txtNombre.getText().trim();
+        String apellido = txtApellido.getText().trim();
+        String email = txtEmail.getText().trim();
+        String telefono = txtTelefono.getText().trim();
+        String password = txtPassword.getText().trim();
+
+        // Validaciones usando la clase Validador personalizada
+        if (!Validador.esNombreValido(nombre) || nombre.length() < 2) {
+            mostrarError("El nombre es inválido. Debe tener al menos 2 letras y solo contener caracteres alfabéticos.");
+            return;
+        }
+
+        if (!Validador.esApellidoValido(apellido) || apellido.length() < 2) {
+            mostrarError("El apellido es inválido. Debe tener al menos 2 letras y solo contener caracteres alfabéticos.");
+            return;
+        }
+
+        if (!Validador.esEmailValido(email)) {
+            mostrarError("Correo electrónico no válido.");
+            return;
+        }
+
+        if (!Validador.esTelefonoValido(telefono)) {
+            mostrarError("El número de teléfono debe tener entre 9 y 15 dígitos.");
+            return;
+        }
+
+        if (!Validador.esPasswordValida(password)) {
+            mostrarError("Contraseña insegura. Debe tener al menos 6 caracteres.");
+            return;
+        }
+
+        // Si todo es válido, guarda cambios
+        cliente.setNombre(nombre);
+        cliente.setApellido(apellido);
+        cliente.setEmail(email);
+        cliente.setTelefono(telefono);
+        cliente.setPassword(password);
 
         boolean ok = new ClienteDAO().actualizarCliente(cliente);
         JOptionPane.showMessageDialog(this,
-                ok ? "Datos actualizados" : "Error al guardar cambios",
+                ok ? "Datos actualizados correctamente." : "Error al guardar cambios.",
                 "Perfil", ok ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
+    }
+
+    private void mostrarError(String mensaje) {
+        JOptionPane.showMessageDialog(this, mensaje, "Error de validación", JOptionPane.WARNING_MESSAGE);
     }
 }

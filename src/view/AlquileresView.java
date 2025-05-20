@@ -146,7 +146,11 @@ public class AlquileresView extends JFrame {
         int confirm = JOptionPane.showConfirmDialog(this, "¿Estás seguro que deseas cancelar la reserva?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (confirm != JOptionPane.YES_OPTION) return;
 
-        boolean eliminado = new AlquilerDAO().eliminarAlquilerPorCocheYCliente(cocheId, cliente.getId());
+        boolean eliminado = new AlquilerDAO().eliminarAlquilerPorCocheYClienteYFecha(
+        	    cocheId,
+        	    cliente.getId(),
+        	    detalle.getFechaInicio()  // Asegúrate de tener este dato en DetalleAlquiler
+        	);
         boolean disponible = new CocheDAO().marcarComoDisponible(cocheId);
 
         if (eliminado && disponible) {

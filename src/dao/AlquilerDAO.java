@@ -166,18 +166,19 @@ public class AlquilerDAO {
     }
 
 
-    public boolean eliminarAlquilerPorCocheYCliente(int idCoche, int idCliente) {
-        String sql = "DELETE FROM alquileres WHERE id_coche = ? AND id_cliente = ?";
+    public boolean eliminarAlquilerPorCocheYClienteYFecha(int idCoche, int idCliente, LocalDate fechaInicio) {
+        String sql = "DELETE FROM alquileres WHERE id_coche = ? AND id_cliente = ? AND fecha_inicio = ?";
 
         try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, idCoche);
             stmt.setInt(2, idCliente);
+            stmt.setDate(3, Date.valueOf(fechaInicio));
             return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            System.err.println("Error al eliminar alquiler por coche y cliente: " + e.getMessage());
+            System.err.println("Error al eliminar alquiler por coche, cliente y fecha: " + e.getMessage());
             return false;
         }
     }

@@ -90,7 +90,7 @@ public class CochesView extends JFrame {
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         panelCentro.add(lblTitulo);
 
-        modelo = new DefaultTableModel(new String[]{"ID", "Marca", "Modelo", "Año", "Precio/día", "Caballos", "Estado"}, 0);
+        modelo = new DefaultTableModel(new String[]{"ID", "Marca", "Modelo", "Año", "Precio/día", "Caballos", "Disponible"}, 0);
         tabla = new JTable(modelo);
         tabla.setRowHeight(25);
         tabla.setFont(new Font("SansSerif", Font.PLAIN, 14));
