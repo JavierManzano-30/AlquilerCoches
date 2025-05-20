@@ -12,11 +12,11 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
-
-import com.toedter.calendar.JDateChooser;
 import java.util.Date;
 import java.util.HashSet;
 import java.time.ZoneId;
+
+import com.toedter.calendar.JDateChooser;
 
 public class CochesView extends JFrame {
 
@@ -34,7 +34,6 @@ public class CochesView extends JFrame {
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
 
-        // Fondo optimizado
         JPanel backgroundPanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -59,7 +58,6 @@ public class CochesView extends JFrame {
         backgroundPanel.setLayout(new BorderLayout());
         setContentPane(backgroundPanel);
 
-        // Top bar
         JPanel topBar = new JPanel(null);
         topBar.setPreferredSize(new Dimension(1000, 40));
         topBar.setBackground(Color.WHITE);
@@ -80,7 +78,6 @@ public class CochesView extends JFrame {
         btnCerrar.addActionListener(e -> System.exit(0));
         topBar.add(btnCerrar);
 
-        // Centro
         JPanel panelCentro = new JPanel();
         panelCentro.setOpaque(false);
         panelCentro.setLayout(new BoxLayout(panelCentro, BoxLayout.Y_AXIS));
@@ -93,7 +90,7 @@ public class CochesView extends JFrame {
         lblTitulo.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         panelCentro.add(lblTitulo);
 
-        modelo = new DefaultTableModel(new String[]{"ID", "Marca", "Modelo", "Año", "Precio/día", "Caballos", "Disponible"}, 0);
+        modelo = new DefaultTableModel(new String[]{"ID", "Marca", "Modelo", "Año", "Precio/día", "Caballos", "Estado"}, 0);
         tabla = new JTable(modelo);
         tabla.setRowHeight(25);
         tabla.setFont(new Font("SansSerif", Font.PLAIN, 14));
@@ -105,7 +102,6 @@ public class CochesView extends JFrame {
 
         cargarCoches();
 
-        // Botones
         JPanel panelBotones = new JPanel();
         panelBotones.setOpaque(false);
         panelBotones.setBorder(BorderFactory.createEmptyBorder(20, 0, 10, 0));
@@ -137,11 +133,10 @@ public class CochesView extends JFrame {
         List<Coche> coches = dao.listarCoches();
 
         for (Coche c : coches) {
-            if (c.isDisponible()) {
-                modelo.addRow(new Object[]{
-                        c.getId(), c.getMarca(), c.getModelo(), c.getAnio(), c.getPrecio(), c.getCaballos(), "Sí"
-                });
-            }
+            modelo.addRow(new Object[]{
+                c.getId(), c.getMarca(), c.getModelo(), c.getAnio(), c.getPrecio(), c.getCaballos(),
+                c.isDisponible() ? "Sí" : "No"
+            });
         }
     }
 
@@ -155,22 +150,56 @@ public class CochesView extends JFrame {
         int idCoche = Integer.parseInt(modelo.getValueAt(fila, 0).toString());
         double precio = Double.parseDouble(modelo.getValueAt(fila, 4).toString());
 
-        // Obtener fechas bloqueadas
         AlquilerDAO alquilerDAO = new AlquilerDAO();
         List<Alquiler> alquileresCoche = alquilerDAO.obtenerAlquileresCoche(idCoche);
         Set<LocalDate> fechasBloqueadas = calcularFechasBloqueadas(alquileresCoche);
 
-        // Crear JDateChoosers
+        // Solo permitir a partir de 2 días después de hoy
+        LocalDate hoy = LocalDate.now();
+        LocalDate minimoInicio = hoy.plusDays(2);
+        Date minDate = Date.from(minimoInicio.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
         JDateChooser fechaInicioPicker = new JDateChooser();
         JDateChooser fechaFinPicker = new JDateChooser();
         fechaInicioPicker.setDateFormatString("yyyy-MM-dd");
         fechaFinPicker.setDateFormatString("yyyy-MM-dd");
+        fechaInicioPicker.setMinSelectableDate(minDate);
+        fechaFinPicker.setMinSelectableDate(minDate);
 
-        JPanel panel = new JPanel(new GridLayout(2, 2));
-        panel.add(new JLabel("Fecha inicio:"));
-        panel.add(fechaInicioPicker);
-        panel.add(new JLabel("Fecha fin:"));
-        panel.add(fechaFinPicker);
+        // Mostrar fechas bloqueadas
+        StringBuilder fechasMsg = new StringBuilder();
+        fechasBloqueadas.stream()
+            .sorted()
+            .forEach(f -> fechasMsg.append("- ").append(f).append("\n"));
+
+        JTextArea bloqueadasArea = new JTextArea(fechasMsg.toString());
+        bloqueadasArea.setEditable(false);
+        bloqueadasArea.setFont(new Font("Monospaced", Font.PLAIN, 11));
+        bloqueadasArea.setBackground(new Color(245, 245, 245));
+        bloqueadasArea.setMargin(new Insets(4, 4, 4, 4));
+        bloqueadasArea.setRows(6);
+
+        // Panel compacto
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+
+        JPanel fila1 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        fila1.add(new JLabel("Fecha inicio:"));
+        fila1.add(fechaInicioPicker);
+
+        JPanel fila2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        fila2.add(new JLabel("Fecha fin:"));
+        fila2.add(fechaFinPicker);
+
+        JPanel fila3 = new JPanel(new BorderLayout());
+        fila3.setBorder(BorderFactory.createTitledBorder("Fechas NO disponibles"));
+        fila3.add(new JScrollPane(bloqueadasArea), BorderLayout.CENTER);
+
+        panel.add(fila1);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(fila2);
+        panel.add(Box.createVerticalStrut(10));
+        panel.add(fila3);
 
         int opcion = JOptionPane.showConfirmDialog(this, panel, "Selecciona fechas de alquiler", JOptionPane.OK_CANCEL_OPTION);
         if (opcion != JOptionPane.OK_OPTION) return;
@@ -184,7 +213,7 @@ public class CochesView extends JFrame {
                 return;
             }
 
-            // Comprobar conflicto con fechas bloqueadas
+            // Verificar conflicto con fechas bloqueadas
             LocalDate tmp = inicio;
             while (!tmp.isAfter(fin)) {
                 if (fechasBloqueadas.contains(tmp)) {
@@ -201,7 +230,6 @@ public class CochesView extends JFrame {
             boolean ok = alquilerDAO.crearAlquiler(alquiler);
 
             if (ok) {
-                new CocheDAO().marcarComoNoDisponible(idCoche); // opcional, si quieres
                 JOptionPane.showMessageDialog(this, "Coche alquilado correctamente.");
                 cargarCoches();
             } else {
@@ -213,6 +241,7 @@ public class CochesView extends JFrame {
         }
     }
 
+
     private void verDetalle() {
         int fila = tabla.getSelectedRow();
         if (fila == -1) {
@@ -222,8 +251,8 @@ public class CochesView extends JFrame {
 
         int idCoche = Integer.parseInt(modelo.getValueAt(fila, 0).toString());
         Coche coche = new CocheDAO().listarCoches().stream()
-                .filter(c -> c.getId() == idCoche)
-                .findFirst().orElse(null);
+            .filter(c -> c.getId() == idCoche)
+            .findFirst().orElse(null);
 
         if (coche != null) {
             new DetalleCocheView(coche, cliente).setVisible(true);
@@ -261,24 +290,20 @@ public class CochesView extends JFrame {
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         return btn;
     }
-    
+
     private Set<LocalDate> calcularFechasBloqueadas(List<Alquiler> alquileres) {
         Set<LocalDate> fechas = new HashSet<>();
         for (Alquiler a : alquileres) {
             LocalDate inicio = a.getFechaInicio();
             LocalDate fin = a.getFechaFin();
 
-            // Añadir días del alquiler
             while (!inicio.isAfter(fin)) {
                 fechas.add(inicio);
                 inicio = inicio.plusDays(1);
             }
 
-            // Añadir día de limpieza
             LocalDate limpieza = fin.plusDays(1);
             fechas.add(limpieza);
-
-            // Si limpieza o siguiente cae en fin de semana, bloquear hasta el lunes
             while (limpieza.getDayOfWeek().getValue() >= 6) {
                 limpieza = limpieza.plusDays(1);
                 fechas.add(limpieza);
@@ -286,5 +311,4 @@ public class CochesView extends JFrame {
         }
         return fechas;
     }
-
 }

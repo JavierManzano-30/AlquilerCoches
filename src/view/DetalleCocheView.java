@@ -1,16 +1,11 @@
 package view;
 
-import com.toedter.calendar.JDateChooser;
-import dao.AlquilerDAO;
-import model.Alquiler;
+import dao.CocheDAO;
 import model.Cliente;
 import model.Coche;
 
 import javax.swing.*;
 import java.awt.*;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.util.Date;
 
 public class DetalleCocheView extends JFrame {
 
@@ -95,28 +90,9 @@ public class DetalleCocheView extends JFrame {
         panelDer.add(Box.createVerticalStrut(40));
         panelDer.add(etiqueta("PRECIO/DÍA", String.format("%.0f€", coche.getPrecio()), true));
 
-        panelDer.add(Box.createVerticalStrut(30));
+        panelDer.add(Box.createVerticalGlue());
 
-        // Calendarios
-        JLabel lblInicio = new JLabel("Fecha inicio:");
-        JDateChooser chooserInicio = new JDateChooser();
-        chooserInicio.setDate(new Date());
-
-        JLabel lblFin = new JLabel("Fecha fin:");
-        JDateChooser chooserFin = new JDateChooser();
-
-        lblInicio.setAlignmentX(Component.LEFT_ALIGNMENT);
-        chooserInicio.setAlignmentX(Component.LEFT_ALIGNMENT);
-        lblFin.setAlignmentX(Component.LEFT_ALIGNMENT);
-        chooserFin.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        panelDer.add(lblInicio);
-        panelDer.add(chooserInicio);
-        panelDer.add(Box.createVerticalStrut(10));
-        panelDer.add(lblFin);
-        panelDer.add(chooserFin);
-
-        // Botones
+        // Solo botón volver
         JPanel panelBotones = new JPanel();
         panelBotones.setBackground(Color.WHITE);
         panelBotones.setLayout(new FlowLayout(FlowLayout.RIGHT, 20, 20));
@@ -131,46 +107,7 @@ public class DetalleCocheView extends JFrame {
             dispose();
         });
 
-        JButton btnAlquilar = new JButton("ALQUILAR");
-        btnAlquilar.setBackground(new Color(110, 180, 230));
-        btnAlquilar.setForeground(Color.WHITE);
-        btnAlquilar.setPreferredSize(new Dimension(120, 40));
-        btnAlquilar.setFocusPainted(false);
-        btnAlquilar.addActionListener(e -> {
-            Date fechaInicioDate = chooserInicio.getDate();
-            Date fechaFinDate = chooserFin.getDate();
-
-            if (fechaInicioDate == null || fechaFinDate == null) {
-                JOptionPane.showMessageDialog(this, "Debes seleccionar ambas fechas.");
-                return;
-            }
-
-            LocalDate inicio = fechaInicioDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-            LocalDate fin = fechaFinDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
-
-            if (!fin.isAfter(inicio)) {
-                JOptionPane.showMessageDialog(this, "La fecha de fin debe ser posterior a la de inicio.");
-                return;
-            }
-
-            int dias = (int) (fin.toEpochDay() - inicio.toEpochDay());
-            double total = dias * coche.getPrecio();
-
-            Alquiler alquiler = new Alquiler(cliente.getId(), coche.getId(), inicio, fin, total);
-
-            if (new AlquilerDAO().crearAlquiler(alquiler)) {
-                JOptionPane.showMessageDialog(this, "¡Alquiler registrado!");
-                new AlquileresView(cliente).setVisible(true);
-                dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Error al registrar el alquiler.");
-            }
-        });
-
         panelBotones.add(btnVolver);
-        panelBotones.add(btnAlquilar);
-
-        panelDer.add(Box.createVerticalGlue());
         panelDer.add(panelBotones);
 
         panel.add(panelDer, BorderLayout.EAST);

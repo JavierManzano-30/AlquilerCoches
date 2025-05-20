@@ -138,12 +138,23 @@ public class AlquilerDAO {
                         rs.getString("transmision")
                     );
 
-                    LocalDate inicio = rs.getDate("fecha_inicio").toLocalDate();
-                    LocalDate fin = rs.getDate("fecha_fin").toLocalDate();
-                    double total = rs.getDouble("total");
-                    int dias = (int) java.time.temporal.ChronoUnit.DAYS.between(inicio, fin);
+                    java.sql.Date sqlInicio = rs.getDate("fecha_inicio");
+                    java.sql.Date sqlFin = rs.getDate("fecha_fin");
 
-                    lista.add(new DetalleAlquiler(coche, dias, total, inicio, fin));
+                    LocalDate inicio = (sqlInicio != null) ? sqlInicio.toLocalDate() : null;
+                    LocalDate fin = (sqlFin != null) ? sqlFin.toLocalDate() : null;
+
+                    int dias = (inicio != null && fin != null)
+                            ? (int) java.time.temporal.ChronoUnit.DAYS.between(inicio, fin) + 1
+                            : 0;
+
+                    double total = rs.getDouble("total");
+
+                    DetalleAlquiler detalle = new DetalleAlquiler(coche, dias, total);
+                    detalle.setFechaInicio(inicio);
+                    detalle.setFechaFin(fin);
+
+                    lista.add(detalle);
                 }
             }
 
@@ -153,6 +164,7 @@ public class AlquilerDAO {
 
         return lista;
     }
+
 
     public boolean eliminarAlquilerPorCocheYCliente(int idCoche, int idCliente) {
         String sql = "DELETE FROM alquileres WHERE id_coche = ? AND id_cliente = ?";
