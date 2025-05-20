@@ -1,5 +1,7 @@
 package model;
 
+import java.time.LocalDate;
+
 /**
  * Clase que representa un alquiler de coche dentro del sistema.
  * Contiene la información sobre el cliente, coche, fechas y precio total.
@@ -8,53 +10,81 @@ public class Alquiler {
     private int id;
     private int idCliente;
     private int idCoche;
-    private String fechaInicio;
-    private int dias;
+    private LocalDate fechaInicio;
+    private LocalDate fechaFin;
     private double total;
 
-    /**
-     * Constructor vacío.
-     */
+    // Constructor vacío
     public Alquiler() {}
 
-    /**
-     * Constructor para inserciones (sin ID).
-     */
-    public Alquiler(int idCliente, int idCoche, String fechaInicio, int dias, double total) {
+    // Constructor sin ID (para inserciones)
+    public Alquiler(int idCliente, int idCoche, LocalDate fechaInicio, LocalDate fechaFin, double total) {
         this.idCliente = idCliente;
         this.idCoche = idCoche;
         this.fechaInicio = fechaInicio;
-        this.dias = dias;
+        this.fechaFin = fechaFin;
         this.total = total;
     }
 
-    /**
-     * Constructor completo (con ID).
-     */
-    public Alquiler(int id, int idCliente, int idCoche, String fechaInicio, int dias, double total) {
+    // Constructor completo (para recuperación desde BBDD)
+    public Alquiler(int id, int idCliente, int idCoche, LocalDate fechaInicio, LocalDate fechaFin, double total) {
         this.id = id;
         this.idCliente = idCliente;
         this.idCoche = idCoche;
         this.fechaInicio = fechaInicio;
-        this.dias = dias;
+        this.fechaFin = fechaFin;
         this.total = total;
     }
 
     // Getters
-    public int getId() { return id; }
-    public int getIdCliente() { return idCliente; }
-    public int getIdCoche() { return idCoche; }
-    public String getFechaInicio() { return fechaInicio; }
-    public int getDias() { return dias; }
-    public double getTotal() { return total; }
+    public int getId() {
+        return id;
+    }
+
+    public int getIdCliente() {
+        return idCliente;
+    }
+
+    public int getIdCoche() {
+        return idCoche;
+    }
+
+    public LocalDate getFechaInicio() {
+        return fechaInicio;
+    }
+
+    public LocalDate getFechaFin() {
+        return fechaFin;
+    }
+
+    public double getTotal() {
+        return total;
+    }
 
     // Setters
-    public void setId(int id) { this.id = id; }
-    public void setIdCliente(int idCliente) { this.idCliente = idCliente; }
-    public void setIdCoche(int idCoche) { this.idCoche = idCoche; }
-    public void setFechaInicio(String fechaInicio) { this.fechaInicio = fechaInicio; }
-    public void setDias(int dias) { this.dias = dias; }
-    public void setTotal(double total) { this.total = total; }
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setIdCliente(int idCliente) {
+        this.idCliente = idCliente;
+    }
+
+    public void setIdCoche(int idCoche) {
+        this.idCoche = idCoche;
+    }
+
+    public void setFechaInicio(LocalDate fechaInicio) {
+        this.fechaInicio = fechaInicio;
+    }
+
+    public void setFechaFin(LocalDate fechaFin) {
+        this.fechaFin = fechaFin;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
 
     @Override
     public String toString() {
@@ -62,8 +92,8 @@ public class Alquiler {
                 "id=" + id +
                 ", idCliente=" + idCliente +
                 ", idCoche=" + idCoche +
-                ", fechaInicio='" + fechaInicio + '\'' +
-                ", dias=" + dias +
+                ", fechaInicio=" + fechaInicio +
+                ", fechaFin=" + fechaFin +
                 ", total=" + total +
                 '}';
     }

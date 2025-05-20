@@ -11,6 +11,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 public class AlquileresView extends JFrame {
@@ -18,6 +19,7 @@ public class AlquileresView extends JFrame {
     private JTable tableAlquileres;
     private Cliente cliente;
     private List<DetalleAlquiler> detalles;
+    private static final DateTimeFormatter FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     public AlquileresView(Cliente cliente) {
         this.cliente = cliente;
@@ -53,7 +55,7 @@ public class AlquileresView extends JFrame {
         btnCerrar.addActionListener(e -> System.exit(0));
         barra.add(btnCerrar);
 
-        // Tabla
+        // Centro
         JPanel panelCentro = new JPanel();
         panelCentro.setOpaque(false);
         panelCentro.setLayout(new BoxLayout(panelCentro, BoxLayout.Y_AXIS));
@@ -106,17 +108,22 @@ public class AlquileresView extends JFrame {
     private void cargarAlquileres() {
         DefaultTableModel model = new DefaultTableModel();
         model.setColumnIdentifiers(new String[]{
-            "Marca", "Modelo", "Año", "Días", "Precio/Día", "Total (€)"
+                "Marca", "Modelo", "Año", "Desde", "Hasta", "Días", "Precio/Día", "Total (€)"
         });
 
         AlquilerDAO dao = new AlquilerDAO();
         detalles = dao.detallesCliente(cliente.getId());
 
         for (DetalleAlquiler detalle : detalles) {
+            String desde = detalle.getFechaInicio() != null ? detalle.getFechaInicio().format(FMT) : "-";
+            String hasta = detalle.getFechaFin() != null ? detalle.getFechaFin().format(FMT) : "-";
+
             model.addRow(new Object[]{
                 detalle.getCoche().getMarca(),
                 detalle.getCoche().getModelo(),
                 detalle.getCoche().getAnio(),
+                desde,
+                hasta,
                 detalle.getDias(),
                 detalle.getCoche().getPrecio(),
                 detalle.getTotal()
@@ -139,7 +146,11 @@ public class AlquileresView extends JFrame {
         int confirm = JOptionPane.showConfirmDialog(this, "¿Estás seguro que deseas cancelar la reserva?", "Confirmar", JOptionPane.YES_NO_OPTION);
         if (confirm != JOptionPane.YES_OPTION) return;
 
-        boolean eliminado = new AlquilerDAO().eliminarAlquilerPorCocheYCliente(cocheId, cliente.getId());
+        boolean eliminado = new AlquilerDAO().eliminarAlquilerPorCocheYClienteYFecha(
+        	    cocheId,
+        	    cliente.getId(),
+        	    detalle.getFechaInicio()  // Asegúrate de tener este dato en DetalleAlquiler
+        	);
         boolean disponible = new CocheDAO().marcarComoDisponible(cocheId);
 
         if (eliminado && disponible) {
@@ -201,7 +212,7 @@ public class AlquileresView extends JFrame {
         btn.setForeground(Color.WHITE);
         btn.setFocusPainted(false);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btn.setPreferredSize(new Dimension(180, 40)); // ancho aumentado
+        btn.setPreferredSize(new Dimension(180, 40));
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 btn.setBackground(new Color(50, 60, 100));

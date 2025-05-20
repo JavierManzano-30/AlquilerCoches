@@ -1,6 +1,7 @@
 package dao;
 
 import java.sql.*;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,15 +16,15 @@ import controller.ConexionBD;
 public class AlquilerDAO {
 
     public boolean crearAlquiler(Alquiler alquiler) {
-        String sql = "INSERT INTO alquileres (id_cliente, id_coche, fecha_inicio, dias, total) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO alquileres (id_cliente, id_coche, fecha_inicio, fecha_fin, total) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, alquiler.getIdCliente());
             stmt.setInt(2, alquiler.getIdCoche());
-            stmt.setString(3, alquiler.getFechaInicio());
-            stmt.setInt(4, alquiler.getDias());
+            stmt.setDate(3, Date.valueOf(alquiler.getFechaInicio()));
+            stmt.setDate(4, Date.valueOf(alquiler.getFechaFin()));
             stmt.setDouble(5, alquiler.getTotal());
 
             stmt.executeUpdate();
@@ -48,8 +49,8 @@ public class AlquilerDAO {
                     rs.getInt("id"),
                     rs.getInt("id_cliente"),
                     rs.getInt("id_coche"),
-                    rs.getString("fecha_inicio"),
-                    rs.getInt("dias"),
+                    rs.getDate("fecha_inicio").toLocalDate(),
+                    rs.getDate("fecha_fin").toLocalDate(),
                     rs.getDouble("total")
                 );
                 lista.add(alquiler);
@@ -75,8 +76,8 @@ public class AlquilerDAO {
                         rs.getInt("id"),
                         rs.getInt("id_cliente"),
                         rs.getInt("id_coche"),
-                        rs.getString("fecha_inicio"),
-                        rs.getInt("dias"),
+                        rs.getDate("fecha_inicio").toLocalDate(),
+                        rs.getDate("fecha_fin").toLocalDate(),
                         rs.getDouble("total")
                     );
                 }
@@ -109,7 +110,7 @@ public class AlquilerDAO {
             SELECT 
                 c.id, ma.nombre AS marca, mo.nombre AS modelo, 
                 c.anio, c.precio_dia, c.caballos, c.cilindrada, c.transmision,
-                a.fecha_inicio, a.dias, a.total
+                a.fecha_inicio, a.fecha_fin, a.total
             FROM alquileres a
             JOIN coches c ON a.id_coche = c.id
             JOIN modelo mo ON c.id_modelo = mo.id
@@ -131,15 +132,29 @@ public class AlquilerDAO {
                         rs.getString("modelo"),
                         rs.getInt("anio"),
                         rs.getDouble("precio_dia"),
-                        true, // disponible no aplica aquí
+                        true,
                         rs.getInt("caballos"),
                         rs.getInt("cilindrada"),
-                        rs.getString("transmision") // NUEVO CAMPO
+                        rs.getString("transmision")
                     );
-                    int dias = rs.getInt("dias");
+
+                    java.sql.Date sqlInicio = rs.getDate("fecha_inicio");
+                    java.sql.Date sqlFin = rs.getDate("fecha_fin");
+
+                    LocalDate inicio = (sqlInicio != null) ? sqlInicio.toLocalDate() : null;
+                    LocalDate fin = (sqlFin != null) ? sqlFin.toLocalDate() : null;
+
+                    int dias = (inicio != null && fin != null)
+                            ? (int) java.time.temporal.ChronoUnit.DAYS.between(inicio, fin) + 1
+                            : 0;
+
                     double total = rs.getDouble("total");
 
-                    lista.add(new DetalleAlquiler(coche, dias, total));
+                    DetalleAlquiler detalle = new DetalleAlquiler(coche, dias, total);
+                    detalle.setFechaInicio(inicio);
+                    detalle.setFechaFin(fin);
+
+                    lista.add(detalle);
                 }
             }
 
@@ -150,19 +165,50 @@ public class AlquilerDAO {
         return lista;
     }
 
-    public boolean eliminarAlquilerPorCocheYCliente(int idCoche, int idCliente) {
-        String sql = "DELETE FROM alquileres WHERE id_coche = ? AND id_cliente = ?";
+
+    public boolean eliminarAlquilerPorCocheYClienteYFecha(int idCoche, int idCliente, LocalDate fechaInicio) {
+        String sql = "DELETE FROM alquileres WHERE id_coche = ? AND id_cliente = ? AND fecha_inicio = ?";
 
         try (Connection conn = ConexionBD.getConexion();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setInt(1, idCoche);
             stmt.setInt(2, idCliente);
+            stmt.setDate(3, Date.valueOf(fechaInicio));
             return stmt.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            System.err.println("Error al eliminar alquiler por coche y cliente: " + e.getMessage());
+            System.err.println("Error al eliminar alquiler por coche, cliente y fecha: " + e.getMessage());
             return false;
         }
+    }
+
+    public List<Alquiler> obtenerAlquileresCoche(int idCoche) {
+        List<Alquiler> lista = new ArrayList<>();
+        String sql = "SELECT * FROM alquileres WHERE id_coche = ?";
+
+        try (Connection conn = ConexionBD.getConexion();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, idCoche);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Alquiler alquiler = new Alquiler(
+                        rs.getInt("id"),
+                        rs.getInt("id_cliente"),
+                        rs.getInt("id_coche"),
+                        rs.getDate("fecha_inicio").toLocalDate(),
+                        rs.getDate("fecha_fin").toLocalDate(),
+                        rs.getDouble("total")
+                    );
+                    lista.add(alquiler);
+                }
+            }
+
+        } catch (SQLException e) {
+            System.err.println("Error al obtener alquileres por coche: " + e.getMessage());
+        }
+
+        return lista;
     }
 }

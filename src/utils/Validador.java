@@ -11,7 +11,8 @@ public class Validador {
     }
 
     public static boolean esEmailValido(String email) {
-        return email != null && email.matches("^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$");
+        if (email == null) return false;
+        return email.matches("^[\\w.-]+@((gmail|hotmail|outlook|yahoo)\\.(com|es|net))$");
     }
 
     public static boolean esTelefonoValido(String telefono) {
